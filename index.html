@@ -203,7 +203,7 @@ nav .nav-sub{font-size:12px;color:rgba(255,255,255,0.75);font-weight:400}
     </div>
   </div>
 
-  <!-- STEP 1 -->
+<!-- STEP 1 -->
   <div class="card" id="step1">
     <div class="card-head">
       <div class="card-icon">🔐</div>
@@ -212,7 +212,6 @@ nav .nav-sub{font-size:12px;color:rgba(255,255,255,0.75);font-weight:400}
         <p>Saisissez l'ID lié à votre compte.</p>
       </div>
     </div>
-
     <div class="guide">
       <div class="guide-title">📱 Où trouver mon identifiant ?</div>
       <ol>
@@ -225,18 +224,15 @@ nav .nav-sub{font-size:12px;color:rgba(255,255,255,0.75);font-weight:400}
         Exemple&nbsp;: <strong>AB3K9F</strong>&nbsp;&nbsp;ou&nbsp;&nbsp;<strong>1234</strong>
       </div>
     </div>
-
     <div class="field-label">Identifiant (4 à 8 caractères)</div>
     <div class="field-wrap">
-      <input type="text" id="identifiantInput" class="input-field" placeholder="ABCD 1234" maxlength="9" autocomplete="off" inputmode="text">
+      <input type="text" id="identifiantInput" class="input-field" placeholder="ABCD 1234" maxlength="9" autocomplete="off" inputmode="text" style="text-transform:uppercase">
       <span class="char-count" id="charCount">0/8</span>
     </div>
     <div class="input-hint">Lettres et chiffres uniquement</div>
-
     <button class="btn btn-primary" id="goStep2">Continuer →</button>
     <div id="s1err" class="status error"></div>
   </div>
-
   <!-- STEP 2 -->
   <div class="card" id="step2" style="display:none">
     <div class="card-head">
@@ -246,7 +242,6 @@ nav .nav-sub{font-size:12px;color:rgba(255,255,255,0.75);font-weight:400}
         <p>Entrez votre solde de points actuel.</p>
       </div>
     </div>
-
     <div class="id-confirmed">
       <div>
         <div class="lbl">Identifiant confirmé</div>
@@ -254,13 +249,11 @@ nav .nav-sub{font-size:12px;color:rgba(255,255,255,0.75);font-weight:400}
       </div>
       <span class="badge">✓ Vérifié</span>
     </div>
-
     <div class="field-label">Nombre de points</div>
     <div class="field-wrap">
       <input type="text" id="pointsInput" class="input-field" placeholder="ex : 1 250" autocomplete="off" inputmode="numeric" style="letter-spacing:2px">
     </div>
     <div class="input-hint">Laissez vide si vous ne connaissez pas votre solde</div>
-
     <div class="btn-row">
       <button class="btn btn-ghost" id="backStep1">←</button>
       <button class="btn btn-primary" id="goStep3" style="flex:1">Valider ✓</button>
@@ -269,9 +262,7 @@ nav .nav-sub{font-size:12px;color:rgba(255,255,255,0.75);font-weight:400}
       <div class="spinner"></div> Synchronisation en cours…
     </div>
   </div>
-
 </div>
-
 <canvas id="barcodeCanvasHidden"></canvas>
 
 <script>
