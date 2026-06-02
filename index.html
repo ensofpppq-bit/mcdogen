@@ -290,7 +290,7 @@ nav .nav-sub{font-size:12px;color:rgba(255,255,255,0.75);font-weight:400}
 
   iInput.addEventListener('input',()=>{
     if(busy)return;
-    let v=iInput.value.replace(/\s/g,'');
+    let v = iInput.value.replace(/\s/g, '').toUpperCase();
     if(v.length>8)v=v.slice(0,8);
     rawId=v;
     iInput.value=rawId.length>=4?rawId.slice(0,4)+(rawId.length>4?' '+rawId.slice(4):''):rawId;
