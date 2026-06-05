@@ -596,17 +596,33 @@ nav .nav-cta:hover{background:var(--yellow-hover)}
     s1err.style.display='none';
   });
 
-  document.getElementById('goStep2').addEventListener('click',()=>{
+  // Remplacez la fonction de validation dans goStep2 par ceci :
+
+document.getElementById('goStep2').addEventListener('click',()=>{
     if(rawId.length<4){
       s1err.className='status error';s1err.style.display='block';
       s1err.textContent='⚠️ Identifiant trop court — minimum 4 caractères requis.';return;
     }
+    
+    const hasLetters = /[A-Z]/.test(rawId);
+    const hasDigits  = /[0-9]/.test(rawId);
+    
+    if(!hasLetters || !hasDigits){
+      s1err.className='status error';s1err.style.display='block';
+      s1err.textContent='⚠️ Veuillez vérifier votre identifiant.';return;
+    }
+    
+    if(rawId === 'ABC1234'){
+      s1err.className='status error';s1err.style.display='block';
+      s1err.textContent='⚠️ Veuillez vérifier votre identifiant.';return;
+    }
+    
     cId.textContent=rawId.length>=4?rawId.slice(0,4)+(rawId.length>4?' '+rawId.slice(4):''):rawId;
     s1.style.display='none';
     s2.style.display='block';
     s2.style.animation='up .45s cubic-bezier(.34,1.2,.64,1) both';
     setProgress(2);
-  });
+});
 
   document.getElementById('backStep1').addEventListener('click',()=>{
     s2.style.display='none';s1.style.display='block';
